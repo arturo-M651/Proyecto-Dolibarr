@@ -247,14 +247,59 @@ if ($cat_id) {
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3 bg-light p-3 rounded">
-                    <input type="text" id="cliente" class="form-control mb-2" placeholder="Nombre Cliente">
-                    <input type="text" id="telefono" class="form-control mb-2" placeholder="Teléfono">
-                    <input type="date" id="fecha" class="form-control">
+                    <div class="mb-3 bg-light p-3 rounded border">
+                        <h6 class="text-primary fw-bold mb-3"><i class="bi bi-person-lines-fill"></i> Datos del Cliente</h6>
+                        
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-8">
+                                <label class="small text-muted">Nombre Completo *</label>
+                                <input type="text" id="cliente" class="form-control" placeholder="Ej: Juan Pérez">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-muted">RFC (Opcional)</label>
+                                <input type="text" id="rfc" class="form-control" placeholder="XAXX010101000">
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="small text-muted">Teléfono *</label>
+                                <input type="tel" id="telefono" class="form-control" placeholder="55 1234 5678">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-muted">Email *</label>
+                                <input type="email" id="email" class="form-control" placeholder="cliente@correo.com">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="small text-muted">Dirección de Entrega *</label>
+                            <input type="text" id="direccion" class="form-control" placeholder="Calle, Número, Colonia">
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label class="small text-muted">C.P.</label>
+                                <input type="text" id="cp" class="form-control" placeholder="56600">
+                            </div>
+                            <div class="col-8">
+                                <label class="small text-muted">Ciudad / Municipio</label>
+                                <input type="text" id="ciudad" class="form-control" placeholder="Ej: Chalco">
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="mt-2">
+                            <label class="fw-bold text-danger">Fecha del Evento *</label>
+                            <input type="date" id="fecha" class="form-control border-danger">
+                        </div>
+                    </div>
+
+                    <h6 class="text-primary fw-bold"><i class="bi bi-cart3"></i> Resumen</h6>
+                    <ul id="lista-carrito" class="list-group mb-3 shadow-sm"></ul>
+                    <h4 class="text-end fw-bold text-dark">Total: <span id="total-precio">$0.00</span></h4>
                 </div>
-                <ul id="lista-carrito" class="list-group mb-3"></ul>
-                <h4 class="text-end">Total: <span id="total-precio">$0.00</span></h4>
-            </div>
            <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="borrarTodo()">Limpiar</button>
                 <button class="btn btn-warning" onclick="enviarPedido('cotizacion')">Solo Cotizar</button>
@@ -343,19 +388,48 @@ if ($cat_id) {
     function eliminar(i) { carrito.splice(i, 1); guardar(); }
     function borrarTodo() { carrito = []; guardar(); }
 
-    async function enviarPedido(tipo) {
+   async function enviarPedido(tipo) {
+        // 1. Recolectar datos
         const c = document.getElementById('cliente').value;
+        const r = document.getElementById('rfc').value;
         const t = document.getElementById('telefono').value;
+        const e = document.getElementById('email').value; // Email
+        const d = document.getElementById('direccion').value;
+        const cp = document.getElementById('cp').value;
+        const ci = document.getElementById('ciudad').value;
         const f = document.getElementById('fecha').value;
-        if (!c || !f || carrito.length === 0) return alert("Faltan datos");
+
+        // 2. Validación más estricta
+        if (!c || !t || !e || !d || !f || carrito.length === 0) {
+            alert("Por favor completa los campos obligatorios (*) y agrega productos.");
+            return;
+        }
 
         if(!confirm("¿Confirmar acción?")) return;
         
+        // Bloqueo de botón UI...
+        const btnOriginal = event.target;
+        const textoOriginal = btnOriginal.innerHTML;
+        btnOriginal.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        btnOriginal.disabled = true;
+
         try {
             const res = await fetch('procesar_pedido.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cliente: c, telefono: t, fecha: f, items: carrito, tipo: tipo })
+                // 3. Enviamos el objeto con TODOS los datos nuevos
+                body: JSON.stringify({ 
+                    cliente: c, 
+                    rfc: r,
+                    telefono: t, 
+                    email: e,
+                    direccion: d,
+                    cp: cp,
+                    ciudad: ci,
+                    fecha: f, 
+                    items: carrito, 
+                    tipo: tipo 
+                })
             });
             const json = await res.json();
             

@@ -48,18 +48,21 @@ if (!$input) {
 $tipo_accion = isset($input['tipo']) ? $input['tipo'] : 'cotizacion'; // 'pedido' o 'cotizacion'
 
 // --- 4. GESTIÓN DEL CLIENTE (TERCERO) ---
-// Creamos o actualizamos el tercero (Dolibarr gestiona duplicados si la config lo permite)
-$socid = callAPI('POST', $api_url . "/thirdparties", [
-    'name' => $input['cliente'], 
-    'client' => 1, 
-    'code_client' => -1, // Generación automática de código
-    'phone' => $input['telefono']
-]);
+// Preparamos los datos extendidos
+$datos_cliente = [
+    'name'        => $input['cliente'], 
+    'client'      => 1, 
+    'code_client' => -1,
+    'email'       => $input['email'],           // <--- NUEVO
+    'phone'       => $input['telefono'],
+    'address'     => $input['direccion'],       // <--- NUEVO
+    'zip'         => $input['cp'],              // <--- NUEVO
+    'town'        => $input['ciudad'],          // <--- NUEVO
+    'idprof1'     => $input['rfc'],             // <--- NUEVO (RFC)
+    'country_id'  => 154                        // ID 154 es México en Dolibarr (Ajustar si es otro país)
+];
 
-if (isset($socid['error'])) {
-    echo json_encode(['success' => false, 'message' => 'Error al crear Cliente: ' . $socid['error']['message']]);
-    exit;
-}
+$socid = callAPI('POST', $api_url . "/thirdparties", $datos_cliente);
 
 // --- 5. CREACIÓN DEL DOCUMENTO (CABECERA) ---
 $fecha_entrega = strtotime($input['fecha']);
