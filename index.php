@@ -91,7 +91,7 @@
                     <div class="p-4 bg-white shadow-sm rounded h-100">
                         <i class="bi bi-truck feature-icon"></i>
                         <h4>Cobertura Total</h4>
-                        <p class="text-muted">Llegamos a donde sea tu evento. Montaje y desmontaje incluido.</p>
+                        <p class="text-muted">Llegamos a donde sea tu evento. Montaje y desmontaje.</p>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <h5>Carpas Montes</h5>
-                    <p class="small text-secondary">Expertos en logística de eventos desde hace más de 10 años.</p>
+                    <p class="small text-secondary">Expertos en montaje de carpas desde hace más de 25 años.</p>
                 </div>
                 <div class="col-md-4 mb-3">
                     <h5>Contacto</h5>
@@ -119,7 +119,7 @@
             </div>
             <hr class="border-secondary">
             <div class="text-center small text-secondary">
-                &copy; 2026 Carpas Montes. Todos los derechos reservados.
+                &copy; 2026 Lonas & Carpas Montes. Todos los derechos reservados.
             </div>
         </div>
     </footer>

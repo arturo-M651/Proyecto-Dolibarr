@@ -105,7 +105,7 @@ if ($cat_id) {
             <div class="carousel-item">
                 <img src="carrusel/Carpa_luces.jpeg" class="d-block w-100" alt="Mobiliario">
                 <div class="carousel-caption d-none d-md-block">
-                    <h1 class="display-4 fw-bold">Mobiliario Premium</h1>
+                    <h1 class="display-4 fw-bold">Mobiliario De Calidad</h1>
                     <p class="fs-4">Sillas y mesas para cualquier tipo de ocasión.</p>
                 </div>
             </div>
