@@ -1,8 +1,17 @@
 <?php
-// prueba_api.php - VERSIÓN FINAL (CONTADOR POR PRODUCTO)
+/**
+ * PRUEBA_API.PHP - CATÁLOGO FINAL
+ * Características:
+ * - Conexión API Dolibarr v21
+ * - Carrito de compras con LocalStorage
+ * - Modal de Cantidad (UX)
+ * - Modal de Detalles con Galería Externa (File System)
+ */
+
 $api_key = "55W05PsnTJuJRFg8lckZZ7hx10lM0Rz9"; 
 $url_base = "http://localhost/dolibarr/htdocs/api/index.php"; 
 
+// --- HELPER API ---
 function callAPI($url, $api_key) {
     $curl = curl_init();
     curl_setopt_array($curl, array(
@@ -16,6 +25,7 @@ function callAPI($url, $api_key) {
     return json_decode($response, true);
 }
 
+// --- LOGICA DE FILTRADO ---
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 $lista_categorias = callAPI($url_base . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
 
@@ -32,7 +42,7 @@ $productos = callAPI($url_base . $endpoint, $api_key);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carpas Montes</title>
+    <title>Carpas Montes | Catálogo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
@@ -40,6 +50,8 @@ $productos = callAPI($url_base . $endpoint, $api_key);
         .card-img-top { height: 200px; object-fit: cover; }
         .card { transition: transform 0.2s; }
         .card:hover { transform: translateY(-5px); }
+        .galeria-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.3s; }
+        .galeria-img:hover { opacity: 0.8; }
     </style>
 </head>
 <body class="bg-light">
@@ -66,9 +78,11 @@ $productos = callAPI($url_base . $endpoint, $api_key);
         } else {
             foreach ($productos as $producto) {
                 $id = $producto['id'];
-                $ref = $producto['ref'];
+                $ref = $producto['ref']; // IMPORTANTE: Usado para la carpeta de fotos
                 $label = addslashes($producto['label']); 
                 $price = (float)$producto['price']; 
+                // Limpieza de descripción para evitar errores de JS
+                $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : 'Sin descripción';
                 
                 $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                 $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
@@ -80,13 +94,17 @@ $productos = callAPI($url_base . $endpoint, $api_key);
                         <h5 class="card-title"><?php echo $label; ?></h5>
                         <h3 class="text-primary mb-3">$<?php echo number_format($price, 2); ?></h3>
                         
-                        <div class="mt-auto">
-                            <button class="btn btn-outline-primary w-100" 
+                        <div class="mt-auto d-flex gap-2">
+                            <button class="btn btn-outline-info w-50" 
+                                    onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
+                                <i class="bi bi-eye"></i> Detalles
+                            </button>
+
+                            <button class="btn btn-outline-primary w-50" 
                                     onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
-                                <i class="bi bi-cart-plus"></i> Agregar al Carrito
+                                <i class="bi bi-cart-plus"></i> Agregar
                             </button>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -114,6 +132,33 @@ $productos = callAPI($url_base . $endpoint, $api_key);
                 <button class="btn btn-success w-100" onclick="confirmarAgregar()">
                     <i class="bi bi-check-circle"></i> Confirmar
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetalles" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="detalleTitulo">Detalles del Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <h3 class="text-primary" id="detallePrecio"></h3>
+                        <p class="text-muted" id="detalleDesc"></p>
+                    </div>
+                    <div class="col-md-12">
+                        <h6 class="border-bottom pb-2">📸 Galería de Fotos</h6>
+                        <div id="galeriaContenedor" class="row g-2 mt-2">
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -148,20 +193,71 @@ $productos = callAPI($url_base . $endpoint, $api_key);
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // --- ESTADO GLOBAL ---
     let carrito = JSON.parse(localStorage.getItem('carrito_v2')) || [];
     let tempProducto = null; 
+    
+    // Instancias Bootstrap
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
+    const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
 
+    // Inicializar
     renderizar();
 
+    // --- LÓGICA DE GALERÍA Y DETALLES ---
+    async function verDetalles(ref, nombre, desc, precio) {
+        document.getElementById('detalleTitulo').innerText = nombre;
+        document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
+        document.getElementById('detalleDesc').innerHTML = desc; 
+        
+        const contenedor = document.getElementById('galeriaContenedor');
+        contenedor.innerHTML = '<div class="text-center w-100 py-3"><div class="spinner-border text-primary"></div><p>Buscando fotos...</p></div>';
+
+        modalDetallesBootstrap.show();
+
+        try {
+            // Timestamp para evitar caché del navegador
+            const response = await fetch(`obtener_fotos.php?ref=${ref}&t=${new Date().getTime()}`);
+            const fotos = await response.json();
+
+            contenedor.innerHTML = ''; 
+
+            if (fotos.length > 0) {
+                fotos.forEach(fotoUrl => {
+                    const div = document.createElement('div');
+                    div.className = 'col-6 col-md-4 col-lg-3';
+                    const rutaSegura = encodeURI(fotoUrl);
+                    
+                    div.innerHTML = `
+                        <div class="card h-100 border-0">
+                            <img src="${rutaSegura}" 
+                                 class="galeria-img shadow-sm border" 
+                                 onclick="window.open('${rutaSegura}', '_blank')"
+                                 onerror="this.parentElement.innerHTML='<small class=\'text-danger\'>Error img</small>'">
+                        </div>
+                    `;
+                    contenedor.appendChild(div);
+                });
+            } else {
+                contenedor.innerHTML = `<div class="alert alert-secondary w-100 text-center"><small>No hay fotos extra para: ${ref}</small></div>`;
+            }
+
+        } catch (error) {
+            contenedor.innerHTML = '<div class="alert alert-danger w-100">Error cargando galería.</div>';
+        }
+    }
+
+    // --- LÓGICA DE AGREGAR PRODUCTO (MODAL) ---
     function prepararAgregar(id, nombre, precio) {
         tempProducto = { id, nombre, precio };
         document.getElementById('lblProductoSeleccionado').innerText = nombre;
         document.getElementById('inputCantidadModal').value = 1;
         modalCantidadBootstrap.show();
+        
         setTimeout(() => {
-            document.getElementById('inputCantidadModal').focus();
-            document.getElementById('inputCantidadModal').select();
+            const input = document.getElementById('inputCantidadModal');
+            input.focus();
+            input.select();
         }, 500);
     }
 
@@ -170,7 +266,7 @@ $productos = callAPI($url_base . $endpoint, $api_key);
         let cantidad = parseInt(input.value);
 
         if (isNaN(cantidad) || cantidad < 1) {
-            alert("Por favor ingrese una cantidad válida");
+            alert("Cantidad inválida");
             return;
         }
 
@@ -178,18 +274,14 @@ $productos = callAPI($url_base . $endpoint, $api_key);
         if (existente) {
             existente.cant += cantidad;
         } else {
-            carrito.push({ 
-                id: tempProducto.id, 
-                nombre: tempProducto.nombre, 
-                precio: tempProducto.precio, 
-                cant: cantidad 
-            });
+            carrito.push({ ...tempProducto, cant: cantidad });
         }
         
         guardar();
         modalCantidadBootstrap.hide();
     }
 
+    // --- GESTIÓN DEL CARRITO ---
     function guardar() {
         localStorage.setItem('carrito_v2', JSON.stringify(carrito));
         renderizar();
@@ -212,17 +304,12 @@ $productos = callAPI($url_base . $endpoint, $api_key);
             lista.innerHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>${item.nombre} <br><small>$${item.precio} x ${item.cant}</small></div>
-                    <div>
-                        <button class="btn btn-sm btn-danger" onclick="eliminar(${index})">X</button>
-                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="eliminar(${index})"><i class="bi bi-trash"></i></button>
                 </li>
             `;
         });
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Mostramos la cantidad de ITEMS distintos (longitud del array)
-        contador.innerText = carrito.length; 
-        
+        contador.innerText = carrito.length; // Contador por items únicos
         totalHtml.innerText = '$' + total.toFixed(2);
     }
 
@@ -236,22 +323,22 @@ $productos = callAPI($url_base . $endpoint, $api_key);
         guardar();
     }
 
+    // --- PROCESAR PEDIDO ---
     async function enviarPedido(tipo_accion) {
         const cliente = document.getElementById('cliente').value;
         const telefono = document.getElementById('telefono').value;
         const fecha = document.getElementById('fecha').value;
 
         if (!cliente || !fecha || carrito.length === 0) {
-            alert("Faltan datos o el carrito está vacío");
+            alert("Completa los datos del cliente y agrega productos.");
             return;
         }
 
-        let mensaje = (tipo_accion === 'pedido') ? "¿Confirmar compra?" : "¿Generar cotización?";
-        if(!confirm(mensaje)) return;
+        if(!confirm("¿Estás seguro de procesar este documento?")) return;
 
         const btnOriginal = event.target;
         const textoOriginal = btnOriginal.innerHTML;
-        btnOriginal.innerHTML = "Procesando...";
+        btnOriginal.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
         btnOriginal.disabled = true;
 
         try {
@@ -270,16 +357,16 @@ $productos = callAPI($url_base . $endpoint, $api_key);
                 borrarTodo(); 
                 bootstrap.Modal.getInstance(document.getElementById('modalCarrito')).hide();
 
+                // Interfaz Temporal de Éxito
                 let div = document.createElement('div');
                 div.innerHTML = `
                     <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;">
-                        <div class="bg-white p-5 rounded text-center shadow">
-                            <h2 class="text-success">¡${etiqueta} Creado!</h2>
+                        <div class="bg-white p-5 rounded text-center shadow animate__animated animate__fadeIn">
+                            <h2 class="text-success"><i class="bi bi-check-circle-fill"></i> ¡${etiqueta} Creado!</h2>
                             <p class="fs-4 fw-bold text-muted">${ref}</p>
                             <hr>
-                            <p>Tu documento ha sido generado correctamente.</p>
                             <a href="descargar_pdf.php?ref=${ref}&tipo=${tipo_accion}" target="_blank" class="btn btn-primary btn-lg w-100 mb-3">
-                                <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF Oficial
+                                <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
                             </a>
                             <button onclick="this.parentElement.parentElement.remove()" class="btn btn-outline-secondary w-100">Cerrar</button>
                         </div>
@@ -288,12 +375,12 @@ $productos = callAPI($url_base . $endpoint, $api_key);
                 document.body.appendChild(div);
 
             } else {
-                alert("Error: " + json.message);
+                alert("Error del servidor: " + json.message);
             }
 
         } catch (e) {
             console.error(e);
-            alert("Error técnico de conexión.");
+            alert("Error de conexión. Revisa la consola.");
         } finally {
             btnOriginal.innerHTML = textoOriginal;
             btnOriginal.disabled = false;
