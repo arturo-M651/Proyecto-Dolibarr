@@ -55,9 +55,25 @@ $productos = callAPI($url_base . $endpoint, $api_key);
     </style>
 </head>
 <body class="bg-light">
-
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.php">🎪 Carpas Montes</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCatalogo">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navCatalogo">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php">
+                            <i class="bi bi-house-door"></i> Volver al Inicio
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 <div class="container py-5">
-    <h1 class="text-center mb-4">🎪 Catálogo de Eventos</h1>
+    <h1 class="text-center mb-4">Catálogo</h1>
 
     <div class="d-flex justify-content-center mb-5 flex-wrap gap-2">
         <a href="prueba_api.php" class="btn <?php echo ($cat_id == '') ? 'btn-primary' : 'btn-outline-primary'; ?>">Todo</a>
