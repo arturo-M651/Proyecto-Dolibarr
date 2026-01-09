@@ -1,12 +1,12 @@
 <?php
 /**
- * PRUEBA_API.PHP - VERSIÓN CON CARRUSEL DE CABECERA
+ * PRUEBA_API.PHP - V3 (SIN BUGS VISUALES)
  */
+require_once 'config.php'; 
 
-require_once 'config.php'; // Cargamos el config
-
-$api_key = DOL_API_KEY; 
-$url_base = DOL_BASE_URL;
+// Mapeo seguro de variables
+$api_url = DOL_BASE_URL; 
+$api_key = DOL_API_KEY;
 
 function callAPI($url, $api_key) {
     $curl = curl_init();
@@ -21,146 +21,148 @@ function callAPI($url, $api_key) {
     return json_decode($response, true);
 }
 
-// 1. OBTENER CATEGORÍAS
-$lista_categorias = callAPI($url_base . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
-
-// 2. LÓGICA DE VISTA
+$lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
-$titulo_pagina = "Categorías Principales";
-$productos = [];
 
-if ($cat_id) {
+// Título dinámico
+$titulo_pagina = "Catálogo General";
+if ($cat_id && is_array($lista_categorias)) {
     foreach($lista_categorias as $c) {
         if($c['id'] == $cat_id) $titulo_pagina = $c['label'];
     }
+}
+
+// Obtener productos
+$productos = [];
+if ($cat_id) {
     $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id;
-    $productos = callAPI($url_base . $endpoint, $api_key);
+    $productos = callAPI($api_url . $endpoint, $api_key);
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo | <?php echo $titulo_pagina; ?></title>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <link rel="stylesheet" href="estilos.css">
+    <title>Catálogo | Carpas Montes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        .btn-flotante { position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 15px 25px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; }
-        .card-img-top { height: 200px; object-fit: cover; }
-        .card { transition: transform 0.2s; border: none; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        
-        /* Estilos Categorías */
-        .cat-card { height: 250px; position: relative; overflow: hidden; border-radius: 15px; cursor: pointer; text-decoration: none; color: white; }
-        .cat-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-        .cat-card:hover img { transform: scale(1.1); }
-        .cat-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 20px; }
-        
-        /* Estilos Carrusel */
-        .carousel-item { height: 400px; } /* Altura del banner */
-        .carousel-item img { height: 100%; object-fit: cover; filter: brightness(0.7); }
-        .carousel-caption { bottom: 20%; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); }
-        
-        .galeria-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: opacity 0.3s; }
-        .galeria-img:hover { opacity: 0.8; }
-    </style>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">🎪 Carpas Montes</a>
-        <div class="ms-auto">
-            <a href="index.php" class="btn btn-sm btn-outline-secondary me-2"><i class="bi bi-house"></i> Inicio</a>
-            <?php if($cat_id): ?>
-                <a href="prueba_api.php" class="btn btn-sm btn-outline-primary"><i class="bi bi-grid-fill"></i> Ver Categorías</a>
-            <?php endif; ?>
+        <a class="navbar-brand fw-bold fs-4" href="index.php">
+            <i class="bi bi-balloon-heart-fill text-warning"></i> Carpas Montes
+        </a>
+        <div class="ms-auto d-flex align-items-center gap-3">
+            <a href="index.php" class="text-decoration-none fw-bold text-dark small d-none d-md-block">INICIO</a>
+            <button class="btn btn-gold rounded-circle d-flex align-items-center justify-content-center shadow-sm position-relative" style="width:45px; height:45px;" data-bs-toggle="modal" data-bs-target="#modalCarrito">
+                <i class="bi bi-cart2 fs-5"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador">0</span>
+            </button>
         </div>
     </div>
 </nav>
 
-<?php if (!$cat_id): ?>
-
-    <div id="carruselPrincipal" class="carousel slide mb-5" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carruselPrincipal" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#carruselPrincipal" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#carruselPrincipal" data-bs-slide-to="2"></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="d-block w-100" alt="Eventos">
-                <div class="carousel-caption d-none d-md-block">
-                    <h1 class="display-4 fw-bold">Grandes Eventos</h1>
-                    <p class="fs-4">Todo lo necesario para tu boda o celebración.</p>
+<div class="sticky-filters shadow-sm">
+    <div class="container">
+        <div class="row align-items-center g-2">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-2 overflow-auto" style="white-space: nowrap; padding-bottom: 5px;">
+                    <a href="prueba_api.php" class="cat-pill <?php echo ($cat_id == '') ? 'active' : ''; ?>">
+                        <i class="bi bi-grid-fill me-1"></i> Todo
+                    </a>
+                    <?php
+                    if (!isset($lista_categorias['error']) && is_array($lista_categorias)) {
+                        foreach ($lista_categorias as $cat) {
+                            $active = ($cat_id == $cat['id']) ? 'active' : '';
+                            echo '<a href="?cat=' . $cat['id'] . '" class="cat-pill ' . $active . '">' . $cat['label'] . '</a>';
+                        }
+                    }
+                    ?>
                 </div>
             </div>
-            <div class="carousel-item">
-                <img src="carrusel/15x30.jpeg" class="d-block w-100" alt="Carpas">
-                <div class="carousel-caption d-none d-md-block">
-                    <h1 class="display-4 fw-bold">Carpas Elegantes</h1>
-                    <p class="fs-4">Protege a tus invitados con estilo y confort.</p>
+            <div class="col-md-4">
+                <?php if ($cat_id): ?>
+                <div class="search-container d-flex align-items-center bg-white px-3 py-1 rounded-pill border">
+                    <i class="bi bi-search text-muted small"></i>
+                    <input type="text" id="buscadorJS" class="search-input bg-transparent border-0 ms-2 w-100" placeholder="Buscar..." style="font-size: 0.9rem; outline:none;">
                 </div>
-            </div>
-            <div class="carousel-item">
-                <img src="carrusel/Carpa_luces.jpeg" class="d-block w-100" alt="Mobiliario">
-                <div class="carousel-caption d-none d-md-block">
-                    <h1 class="display-4 fw-bold">Mobiliario De Calidad</h1>
-                    <p class="fs-4">Sillas y mesas para cualquier tipo de ocasión.</p>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carruselPrincipal" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
     </div>
+</div>
 
-    <div class="container pb-5">
-        <h2 class="text-center mb-4 fw-bold text-secondary">Nuestras Categorías</h2>
+<div class="container py-4">
+
+    <?php if (!$cat_id): ?>
+        
+        <div id="carruselHome" class="carousel slide mb-5 rounded-4 overflow-hidden shadow" data-bs-ride="carousel" data-bs-interval="3000">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="1"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active" style="height: 350px;">
+                    <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 1"
+                         onerror="this.src='https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                        <h2 class="fw-bold">Eventos Inolvidables</h2>
+                    </div>
+                </div>
+                <div class="carousel-item" style="height: 350px;">
+                    <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2"
+                         onerror="this.src='https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                        <h2 class="fw-bold">Mobiliario Premium</h2>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next">
+                <span class="carousel-control-next-icon"></span>
+            </button>
+        </div>
+
+        <h3 class="text-center mb-4 fw-bold text-secondary">Nuestras Categorías</h3>
         <div class="row g-4">
             <?php
             if (is_array($lista_categorias) && !isset($lista_categorias['error'])) {
                 foreach ($lista_categorias as $cat) {
+                    // Lógica de imagen robusta (intenta local, si falla JS lo arregla)
                     $img_cat = "img_categorias/" . $cat['id'] . ".jpg";
-                    if (!file_exists($img_cat)) {
-                        $img_cat = "https://source.unsplash.com/random/400x300/?party," . urlencode($cat['label']);
-                    }
             ?>
-                <div class="col-md-6 col-lg-4">
-                    <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card d-block shadow animate__animated animate__fadeInUp">
-                        <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>">
-                        <div class="cat-overlay">
-                            <h3 class="mb-0"><?php echo $cat['label']; ?></h3>
-                            <small class="text-white-50">Explorar <i class="bi bi-arrow-right"></i></small>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                    <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card d-block text-decoration-none shadow position-relative overflow-hidden rounded-4">
+                        <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>" class="w-100 h-100 object-fit-cover"
+                             onerror="this.onerror=null; this.src='https://source.unsplash.com/random/400x300/?event,<?php echo urlencode($cat['label']); ?>';">
+                        <div class="cat-overlay position-absolute bottom-0 start-0 w-100 p-3" 
+                             style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <h4 class="mb-0 text-white"><?php echo $cat['label']; ?></h4>
+                            <small class="text-warning">Ver catálogo <i class="bi bi-arrow-right"></i></small>
                         </div>
                     </a>
                 </div>
             <?php
                 }
-            } else {
-                echo "<p class='text-center'>Cargando categorías...</p>";
             }
             ?>
         </div>
-    </div>
-
-<?php else: ?>
-
-    <div class="container py-5">
-        <h2 class="text-center mb-5 fw-bold text-uppercase"><?php echo $titulo_pagina; ?></h2>
-        <div class="row">
+    
+    <?php else: ?>
+        <h3 class="mb-4 fw-bold text-secondary"><?php echo $titulo_pagina; ?></h3>
+        
+        <div class="row g-4" id="contenedorProductos">
             <?php
             if (isset($productos['error']) || empty($productos)) {
-                echo "<div class='alert alert-warning col-12 text-center'>No hay productos aquí.</div>";
-                echo "<div class='text-center'><a href='prueba_api.php' class='btn btn-primary'>Volver</a></div>";
+                echo "<div class='col-12 text-center py-5'><i class='bi bi-box-seam display-1 text-muted'></i><p class='mt-3'>Sin productos.</p></div>";
             } else {
                 foreach ($productos as $producto) {
                     $id = $producto['id'];
@@ -169,27 +171,34 @@ if ($cat_id) {
                     $price = (float)$producto['price']; 
                     $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
                     
+                    // Imagen Producto
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
             ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm" data-aos="zoom-in">
-                        <img src="<?php echo $img_src; ?>" class="card-img-top">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title"><?php echo $label; ?></h5>
-                            <h3 class="text-primary mb-3">$<?php echo number_format($price, 2); ?></h3>
+                <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-aos="zoom-in">
+                    <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
+                        
+                        <div class="product-img-wrapper position-relative cursor-pointer" style="height: 200px; overflow: hidden;"
+                             onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
+                            <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" 
+                                 onerror="this.src='https://via.placeholder.com/300x300?text=Sin+Foto'">
+                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-dark text-warning shadow">$<?php echo number_format($price, 2); ?></span>
+                        </div>
+
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
+                            <small class="text-muted mb-3 small d-block text-truncate"><?php echo strip_tags($desc); ?></small>
                             
-                            <div class="mt-auto d-flex gap-2">
-                                <button class="btn btn-outline-info w-50" 
-                                        onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
-                                    <i class="bi bi-eye"></i> Detalles
-                                </button>
-                                <button class="btn btn-outline-primary w-50" 
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <button class="btn btn-sm btn-light text-primary fw-bold" 
+                                        onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">Ver</button>
+                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" style="width:32px; height:32px;"
                                         onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
-                                    <i class="bi bi-cart-plus"></i>
+                                    <i class="bi bi-plus"></i>
                                 </button>
                             </div>
                         </div>
+
                     </div>
                 </div>
             <?php 
@@ -197,125 +206,87 @@ if ($cat_id) {
             } 
             ?>
         </div>
-    </div>
-
-<?php endif; ?>
-
-<button class="btn btn-primary btn-flotante" data-bs-toggle="modal" data-bs-target="#modalCarrito">
-    <i class="bi bi-cart-fill"></i> Mi Lista (<span id="contador">0</span>)
-</button>
+    <?php endif; ?>
+</div>
 
 <div class="modal fade" id="modalCantidad" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h6 class="modal-title" id="lblProductoSeleccionado">Producto</h6>
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-primary text-white border-0 py-2">
+                <h6 class="modal-title small">Cantidad</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
-                <p class="mb-2">Ingrese la cantidad:</p>
-                <input type="number" id="inputCantidadModal" class="form-control form-control-lg text-center mb-3" value="1" min="1">
-                <button class="btn btn-success w-100" onclick="confirmarAgregar()">Confirmar</button>
+                <h6 class="fw-bold mb-3" id="lblProductoSeleccionado"></h6>
+                <input type="number" id="inputCantidadModal" class="form-control text-center mb-3" value="1" min="1">
+                <button class="btn btn-gold w-100 btn-sm rounded-pill" onclick="confirmarAgregar()">Agregar</button>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="modalDetalles" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
                 <h5 class="modal-title fw-bold" id="detalleTitulo"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-12 mb-4">
-                        <h3 class="text-primary" id="detallePrecio"></h3>
-                        <p class="text-muted" id="detalleDesc"></p>
-                    </div>
-                    <div class="col-md-12">
-                        <h6 class="border-bottom pb-2">📸 Galería</h6>
-                        <div id="galeriaContenedor" class="row g-2 mt-2"></div>
-                    </div>
-                </div>
+                <h2 class="text-gold fw-bold mb-3" id="detallePrecio"></h2>
+                <div class="bg-light p-3 rounded text-secondary mb-3 small" id="detalleDesc"></div>
+                <div id="galeriaContenedor" class="row g-2"></div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="modalCarrito" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Cotización</h5>
+                <h5 class="modal-title"><i class="bi bi-cart3"></i> Resumen</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                    <div class="mb-3 bg-light p-3 rounded border">
-                        <h6 class="text-primary fw-bold mb-3"><i class="bi bi-person-lines-fill"></i> Datos del Cliente</h6>
-                        
+                <div class="bg-light p-3 rounded mb-3 border">
+                    <input type="text" id="cliente" class="form-control form-control-sm mb-2" placeholder="Nombre Completo *">
+                    <input type="email" id="email" class="form-control form-control-sm mb-2" placeholder="Email *">
+                    <input type="date" id="fecha" class="form-control form-control-sm mb-2">
+                    
+                    <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Datos Entrega/RFC</a>
+                    <div class="collapse mt-2" id="extraFields">
+                        <input type="tel" id="telefono" class="form-control form-control-sm mb-2" placeholder="Teléfono">
+                        <input type="text" id="direccion" class="form-control form-control-sm mb-2" placeholder="Dirección">
                         <div class="row g-2 mb-2">
-                            <div class="col-md-8">
-                                <label class="small text-muted">Nombre Completo *</label>
-                                <input type="text" id="cliente" class="form-control" placeholder="Ej: Juan Pérez">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="small text-muted">RFC (Opcional)</label>
-                                <input type="text" id="rfc" class="form-control" placeholder="XAXX010101000">
-                            </div>
+                            <div class="col-4"><input type="text" id="cp" class="form-control form-control-sm" placeholder="CP"></div>
+                            <div class="col-8"><input type="text" id="ciudad" class="form-control form-control-sm" placeholder="Ciudad"></div>
                         </div>
-
-                        <div class="row g-2 mb-2">
-                            <div class="col-md-6">
-                                <label class="small text-muted">Teléfono *</label>
-                                <input type="tel" id="telefono" class="form-control" placeholder="55 1234 5678">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="small text-muted">Email *</label>
-                                <input type="email" id="email" class="form-control" placeholder="cliente@correo.com">
-                            </div>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="small text-muted">Dirección de Entrega *</label>
-                            <input type="text" id="direccion" class="form-control" placeholder="Calle, Número, Colonia">
-                        </div>
-
-                        <div class="row g-2">
-                            <div class="col-4">
-                                <label class="small text-muted">C.P.</label>
-                                <input type="text" id="cp" class="form-control" placeholder="56600">
-                            </div>
-                            <div class="col-8">
-                                <label class="small text-muted">Ciudad / Municipio</label>
-                                <input type="text" id="ciudad" class="form-control" placeholder="Ej: Chalco">
-                            </div>
-                        </div>
-                        
-                        <hr>
-                        
-                        <div class="mt-2">
-                            <label class="fw-bold text-danger">Fecha del Evento *</label>
-                            <input type="date" id="fecha" class="form-control border-danger">
-                        </div>
+                        <input type="text" id="rfc" class="form-control form-control-sm" placeholder="RFC">
                     </div>
-
-                    <h6 class="text-primary fw-bold"><i class="bi bi-cart3"></i> Resumen</h6>
-                    <ul id="lista-carrito" class="list-group mb-3 shadow-sm"></ul>
-                    <h4 class="text-end fw-bold text-dark">Total: <span id="total-precio">$0.00</span></h4>
                 </div>
-           <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="borrarTodo()">Limpiar</button>
-                <button class="btn btn-warning" onclick="enviarPedido('cotizacion')">Solo Cotizar</button>
-                <button class="btn btn-success" onclick="enviarPedido('pedido')">Confirmar Pedido</button>
+
+                <ul id="lista-carrito" class="list-group list-group-flush mb-3"></ul>
+                <div class="d-flex justify-content-between h5 fw-bold">
+                    <span>Total:</span>
+                    <span class="text-primary" id="total-precio">$0.00</span>
+                </div>
+            </div>
+            <div class="modal-footer flex-column border-0 pt-0">
+                <div class="d-flex w-100 gap-2 mb-2">
+                    <button class="btn btn-outline-warning w-50 rounded-pill fw-bold" onclick="enviarPedido('cotizacion')">Solo Cotizar</button>
+                    <button class="btn btn-gold w-50 rounded-pill fw-bold" onclick="enviarPedido('pedido')">Hacer Pedido</button>
+                </div>
+                <button class="btn btn-link text-muted btn-sm text-decoration-none" onclick="borrarTodo()">Vaciar</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    AOS.init();
     let carrito = JSON.parse(localStorage.getItem('carrito_v2')) || [];
     let tempProducto = null; 
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
@@ -323,67 +294,73 @@ if ($cat_id) {
 
     renderizar();
 
+    // BUSCADOR JS
+    const buscador = document.getElementById('buscadorJS');
+    if(buscador){
+        buscador.addEventListener('keyup', function(e) {
+            const texto = e.target.value.toLowerCase();
+            document.querySelectorAll('.item-producto').forEach(item => {
+                const nombre = item.getAttribute('data-nombre');
+                item.style.display = nombre.includes(texto) ? 'block' : 'none';
+            });
+        });
+    }
+
+    // DETALLES
     async function verDetalles(ref, nombre, desc, precio) {
         document.getElementById('detalleTitulo').innerText = nombre;
         document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-        document.getElementById('detalleDesc').innerHTML = desc; 
-        
+        document.getElementById('detalleDesc').innerHTML = desc || 'Sin descripción.';
         const contenedor = document.getElementById('galeriaContenedor');
-        contenedor.innerHTML = '<div class="text-center w-100 py-3"><div class="spinner-border text-primary"></div></div>';
-
+        contenedor.innerHTML = '<div class="spinner-border text-warning"></div>';
         modalDetallesBootstrap.show();
 
         try {
-            const response = await fetch(`obtener_fotos.php?ref=${ref}&t=${new Date().getTime()}`);
-            const fotos = await response.json();
+            const res = await fetch(`obtener_fotos.php?ref=${ref}&t=${Date.now()}`);
+            const fotos = await res.json();
             contenedor.innerHTML = ''; 
-            if (fotos.length > 0) {
-                fotos.forEach(fotoUrl => {
-                    const div = document.createElement('div');
-                    div.className = 'col-6 col-md-4 col-lg-3';
-                    div.innerHTML = `<img src="${encodeURI(fotoUrl)}" class="galeria-img shadow-sm border" onclick="window.open('${encodeURI(fotoUrl)}', '_blank')">`;
-                    contenedor.appendChild(div);
+            if (fotos.length) {
+                fotos.forEach(url => {
+                    contenedor.innerHTML += `<div class="col-4"><img src="${encodeURI(url)}" class="img-fluid rounded shadow-sm" onclick="window.open('${encodeURI(url)}')"></div>`;
                 });
-            } else {
-                contenedor.innerHTML = `<div class="text-center text-muted small w-100">Sin fotos extra</div>`;
-            }
-        } catch (error) { contenedor.innerHTML = 'Error cargando fotos'; }
+            } else { contenedor.innerHTML = '<small class="text-muted col-12">No hay imágenes adicionales.</small>'; }
+        } catch (e) { contenedor.innerHTML = 'Error.'; }
     }
 
+    // CARRITO
     function prepararAgregar(id, nombre, precio) {
         tempProducto = { id, nombre, precio };
         document.getElementById('lblProductoSeleccionado').innerText = nombre;
         document.getElementById('inputCantidadModal').value = 1;
         modalCantidadBootstrap.show();
-        setTimeout(() => document.getElementById('inputCantidadModal').focus(), 500);
     }
 
     function confirmarAgregar() {
         let cant = parseInt(document.getElementById('inputCantidadModal').value);
-        if (isNaN(cant) || cant < 1) return;
-
+        if (cant < 1) return;
         let exist = carrito.find(i => i.id == tempProducto.id);
-        if (exist) exist.cant += cant;
-        else carrito.push({ ...tempProducto, cant: cant });
-        
+        if (exist) exist.cant += cant; else carrito.push({ ...tempProducto, cant });
         guardar();
         modalCantidadBootstrap.hide();
     }
 
     function guardar() { localStorage.setItem('carrito_v2', JSON.stringify(carrito)); renderizar(); }
-    
+
     function renderizar() {
         const lista = document.getElementById('lista-carrito');
         lista.innerHTML = '';
         let total = 0;
-        if (carrito.length === 0) lista.innerHTML = '<li class="list-group-item text-center">Vacío</li>';
+        if(carrito.length === 0) lista.innerHTML = '<div class="text-center text-muted small py-2">Vacío</div>';
         
         carrito.forEach((item, index) => {
             total += item.precio * item.cant;
             lista.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>${item.nombre} <br><small>$${item.precio} x ${item.cant}</small></div>
-                    <button class="btn btn-sm btn-danger" onclick="eliminar(${index})">X</button>
+                <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div class="small lh-1">
+                        <span class="fw-bold">${item.nombre}</span><br>
+                        <span class="text-muted">$${item.precio} x ${item.cant}</span>
+                    </div>
+                    <i class="bi bi-x-circle text-danger cursor-pointer" onclick="eliminar(${index})"></i>
                 </li>`;
         });
         document.getElementById('contador').innerText = carrito.length;
@@ -393,68 +370,46 @@ if ($cat_id) {
     function eliminar(i) { carrito.splice(i, 1); guardar(); }
     function borrarTodo() { carrito = []; guardar(); }
 
-   async function enviarPedido(tipo) {
-        // 1. Recolectar datos
+    async function enviarPedido(tipo) {
         const c = document.getElementById('cliente').value;
-        const r = document.getElementById('rfc').value;
-        const t = document.getElementById('telefono').value;
-        const e = document.getElementById('email').value; // Email
-        const d = document.getElementById('direccion').value;
-        const cp = document.getElementById('cp').value;
-        const ci = document.getElementById('ciudad').value;
+        const e = document.getElementById('email').value;
         const f = document.getElementById('fecha').value;
-
-        // 2. Validación más estricta
-        if (!c || !t || !e || !d || !f || carrito.length === 0) {
-            alert("Por favor completa los campos obligatorios (*) y agrega productos.");
+        
+        if (!c || !e || !f || carrito.length === 0) {
+            alert("Completa Nombre, Email y Fecha.");
             return;
         }
 
-        if(!confirm("¿Confirmar acción?")) return;
-        
-        // Bloqueo de botón UI...
-        const btnOriginal = event.target;
-        const textoOriginal = btnOriginal.innerHTML;
-        btnOriginal.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
-        btnOriginal.disabled = true;
+        if(!confirm(`¿Generar ${tipo}?`)) return;
+
+        const btn = event.target;
+        const txt = btn.innerHTML;
+        btn.innerHTML = '...';
+        btn.disabled = true;
 
         try {
             const res = await fetch('procesar_pedido.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // 3. Enviamos el objeto con TODOS los datos nuevos
-                body: JSON.stringify({ 
-                    cliente: c, 
-                    rfc: r,
-                    telefono: t, 
-                    email: e,
-                    direccion: d,
-                    cp: cp,
-                    ciudad: ci,
-                    fecha: f, 
-                    items: carrito, 
-                    tipo: tipo 
+                body: JSON.stringify({
+                    cliente: c, email: e, fecha: f,
+                    telefono: document.getElementById('telefono').value,
+                    direccion: document.getElementById('direccion').value,
+                    cp: document.getElementById('cp').value,
+                    ciudad: document.getElementById('ciudad').value,
+                    rfc: document.getElementById('rfc').value,
+                    items: carrito, tipo: tipo
                 })
             });
             const json = await res.json();
-            
             if (json.success) {
                 borrarTodo();
                 bootstrap.Modal.getInstance(document.getElementById('modalCarrito')).hide();
-                let div = document.createElement('div');
-                div.innerHTML = `<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;">
-                    <div class="bg-white p-5 rounded text-center shadow">
-                        <h2 class="text-success">¡Éxito!</h2>
-                        <p class="text-muted">${json.ref}</p>
-                        <a href="descargar_pdf.php?ref=${json.ref}&tipo=${tipo}" class="btn btn-primary btn-lg w-100 mb-3">Descargar PDF</a>
-                        <button onclick="this.parentElement.parentElement.remove()" class="btn btn-secondary w-100">Cerrar</button>
-                    </div></div>`;
-                document.body.appendChild(div);
+                alert(`¡Listo! Referencia: ${json.ref}. Revisa tu correo.`);
             } else { alert("Error: " + json.message); }
-        } catch (e) { alert("Error de conexión"); }
+        } catch (err) { alert("Error de conexión"); }
+        finally { btn.innerHTML = txt; btn.disabled = false; }
     }
 </script>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>AOS.init();</script>
 </body>
 </html>

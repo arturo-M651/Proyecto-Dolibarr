@@ -255,16 +255,19 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-6" data-aos="fade-left">
-                    <div class="card border-0 shadow overflow-hidden h-100" style="min-height: 400px; border-radius: 20px;">
+                  <div class="col-lg-6 h-100" data-aos="fade-left">
+                    <div class="card border-0 shadow overflow-hidden h-100" style="border-radius: 20px; min-height: 400px;">
                         <iframe 
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60262.06642777642!2d-98.93285764042617!3d19.263300588691515!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ce1e5170425371%3A0x6e76634cd702c2!2sChalco%20de%20D%C3%ADaz%20Covarrubias%2C%20M%C3%A9x.!5e0!3m2!1ses-419!2smx!4v1700000000000!5m2!1ses-419!2smx" 
-                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
+                            width="100%" 
+                            height="100%" 
+                            style="border:0; min-height: 400px;" 
+                            loading="lazy" 
+                            allowfullscreen
+                            referrerpolicy="no-referrer-when-downgrade"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.163353597087!2d-98.7724278247941!3d19.131284082086396!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ce3c8d342344a7%3A0x6c5a374cc3492cd7!2sLONAS%20Y%20CARPAS%20MONTES!5e0!3m2!1ses-419!2smx!4v1704845000000!5m2!1ses-419!2smx">
                         </iframe>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
@@ -279,7 +282,7 @@
                 <div class="col-md-4 mb-4">
                     <h5 class="mb-3">Contacto Rápido</h5>
                     <ul class="list-unstyled text-white-50">
-                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> Amecameca, Edo. Méx.</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
                         <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
                         <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 1234 5678</li>
                     </ul>

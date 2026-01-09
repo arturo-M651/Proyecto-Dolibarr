@@ -171,3 +171,65 @@ h1, h2, h3, h4, h5, .navbar-brand {
 .accordion-item {
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
+
+/* --- CORRECCIONES V3: LAYOUT Y Z-INDEX --- */
+
+/* 1. Navbar Fija (Altura aprox 76px) */
+.navbar.fixed-top {
+    height: 76px;
+    background-color: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 1050; /* Capa más alta */
+}
+
+/* 2. Barra de Filtros (Se pega JUSTO DEBAJO de la navbar) */
+.sticky-filters {
+    position: sticky; /* Se pega al scrollear */
+    top: 76px;      /* Altura exacta de la navbar */
+    z-index: 1040;  /* Una capa abajo de la navbar */
+    background-color: #f8f9fa; /* Color sólido para que no se trasluzca el texto al pasar */
+    border-bottom: 1px solid #ddd;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/* 3. Corrección de Imágenes Rotas */
+.img-fallback {
+    background-color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 0.8rem;
+}
+
+/* 4. Ajuste del cuerpo para no esconder contenido tras la navbar */
+body {
+    padding-top: 76px; /* Empuja todo el contenido hacia abajo */
+}
+
+/* 3. Corrección de Tarjetas (Textos encimados) */
+.product-card {
+    height: 100%; /* Asegura altura completa */
+    display: flex;
+    flex-direction: column;
+}
+
+.product-desc-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Corta el texto a 2 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 40px; /* Evita saltos de altura si el texto es corto */
+}
+
+/* 4. Buscador más limpio */
+.search-container {
+    border: 1px solid #ddd;
+    margin-top: 10px; /* Espacio en móvil */
+}
+
+@media (min-width: 768px) {
+    .search-container { margin-top: 0; } /* Sin margen en PC */
+}
