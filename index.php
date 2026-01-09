@@ -3,48 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carpas Montes | Inicio</title>
+    <title>Carpas Montes | Eventos Exclusivos</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        /* Estilos personalizados para la Portada */
-        .hero-section {
-            /* Fondo con imagen de evento (puedes cambiar la URL por una foto tuya local) */
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            height: 100vh; /* Pantalla completa */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-        }
-        
-        .feature-icon {
-            font-size: 3rem;
-            color: #0d6efd; /* Azul Bootstrap */
-            margin-bottom: 1rem;
-        }
-
-        .navbar-brand { font-weight: bold; letter-spacing: 1px; }
-    </style>
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+    <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="#">🎪 Carpas Montes</a>
+            <a class="navbar-brand fw-bold fs-3" href="#">
+                <i class="bi bi-balloon-heart-fill text-warning"></i> Carpas Montes
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="index.php">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#servicios">Servicios</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contacto">Contacto</a></li>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link mx-2" href="#">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link mx-2" href="#servicios">Experiencia</a></li>
+                    <li class="nav-item"><a class="nav-link mx-2" href="#galeria">Galería</a></li>
                     <li class="nav-item ms-lg-3">
-                        <a class="btn btn-primary rounded-pill px-4" href="prueba_api.php">Ver Catálogo</a>
+                        <a class="btn btn-gold" href="prueba_api.php">Ver Catálogo</a>
                     </li>
                 </ul>
             </div>
@@ -52,78 +36,286 @@
     </nav>
 
     <header class="hero-section">
-        <div class="container animate__animated animate__fadeIn">
-            <h1 class="display-1 fw-bold mb-3">Haz de tu evento algo inolvidable</h1>
-            <p class="lead mb-4 fs-3">Renta de carpas, sillas, mesas y todo lo que necesitas para tu fiesta.</p>
-            <div class="d-flex gap-3 justify-content-center">
-                <a href="prueba_api.php" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold">
-                    <i class="bi bi-cart4"></i> Cotizar Ahora
+        <div class="container" data-aos="zoom-in" data-aos-duration="1000">
+            <h1 class="hero-title display-1 fw-bold">Creamos Momentos <br> <span style="color:var(--gold);">Inolvidables</span></h1>
+            <p class="lead mb-5 fs-4 text-light opacity-75">La mejor infraestructura para eventos en el Estado de México.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a href="prueba_api.php" class="btn btn-gold btn-lg shadow-lg">
+                    <i class="bi bi-calendar-check"></i> Cotizar Mi Evento
                 </a>
-                <a href="#contacto" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill">
-                    Contáctanos
+                <a href="https://wa.me/525512345678" target="_blank" class="btn btn-outline-light btn-lg px-5 rounded-pill fw-bold">
+                    <i class="bi bi-whatsapp"></i> Contactar
                 </a>
             </div>
         </div>
     </header>
 
-    <section id="servicios" class="py-5 bg-light">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">¿Por qué elegirnos?</h2>
-                <p class="text-muted">Calidad y compromiso en cada montaje</p>
-            </div>
+    <section class="py-5 bg-dark text-white">
+        <div class="container">
             <div class="row text-center">
-                <div class="col-md-4 mb-4">
-                    <div class="p-4 bg-white shadow-sm rounded h-100">
-                        <i class="bi bi-star-fill feature-icon"></i>
-                        <h4>Calidad Premium</h4>
-                        <p class="text-muted">Mobiliario en excelentes condiciones, limpio y listo para usarse.</p>
+                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="100">
+                    <h2 class="display-4 fw-bold text-warning">25+</h2>
+                    <p class="text-uppercase ls-2">Años de Experiencia</p>
+                </div>
+                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="200">
+                    <h2 class="display-4 fw-bold text-warning">5000+</h2>
+                    <p class="text-uppercase ls-2">Eventos Exitosos</p>
+                </div>
+                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="300">
+                    <h2 class="display-4 fw-bold text-warning">100%</h2>
+                    <p class="text-uppercase ls-2">Clientes Satisfechos</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="servicios" class="py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5" data-aos="fade-down">
+                <h5 class="text-warning text-uppercase fw-bold">¿Por qué elegirnos?</h5>
+                <h2 class="fw-bold display-5 text-dark">Excelencia en cada detalle</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4" data-aos="flip-left">
+                    <div class="service-card shadow-sm text-center">
+                        <i class="bi bi-gem feature-icon"></i>
+                        <h4 class="mb-3">Calidad Premium</h4>
+                        <p class="text-muted">Mobiliario de alta gama, limpio y en perfectas condiciones estéticas para tu celebración.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="p-4 bg-white shadow-sm rounded h-100">
-                        <i class="bi bi-clock-fill feature-icon"></i>
-                        <h4>Puntualidad</h4>
-                        <p class="text-muted">Entregas a tiempo para que tu evento comience sin preocupaciones.</p>
+                <div class="col-md-4" data-aos="flip-left" data-aos-delay="200">
+                    <div class="service-card shadow-sm text-center">
+                        <i class="bi bi-alarm feature-icon"></i>
+                        <h4 class="mb-3">Puntualidad Absoluta</h4>
+                        <p class="text-muted">Entendemos la importancia del tiempo. Tu montaje estará listo mucho antes de que llegue el primer invitado.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4">
-                    <div class="p-4 bg-white shadow-sm rounded h-100">
+                <div class="col-md-4" data-aos="flip-left" data-aos-delay="400">
+                    <div class="service-card shadow-sm text-center">
                         <i class="bi bi-truck feature-icon"></i>
-                        <h4>Cobertura Total</h4>
-                        <p class="text-muted">Llegamos a donde sea tu evento. Montaje y desmontaje.</p>
+                        <h4 class="mb-3">Logística Integral</h4>
+                        <p class="text-muted">Nos encargamos del transporte, montaje y desmontaje. Tú solo preocúpate por disfrutar.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer id="contacto" class="bg-dark text-white py-5">
+    <section class="py-5 bg-white">
+        <div class="container py-4">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h5 class="text-warning text-uppercase fw-bold">Proceso Simple</h5>
+                <h2 class="display-5 fw-bold">Tu evento en 4 pasos</h2>
+            </div>
+            
+            <div class="row text-center g-4">
+                <div class="col-md-3" data-aos="fade-right" data-aos-delay="100">
+                    <div class="position-relative p-4">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-laptop"></i></div>
+                        <h4 class="fw-bold">1. Cotiza</h4>
+                        <p class="text-muted">Explora nuestro catálogo en línea y agrega lo que necesitas al carrito.</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-right" data-aos-delay="200">
+                    <div class="position-relative p-4">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-file-earmark-text"></i></div>
+                        <h4 class="fw-bold">2. Confirma</h4>
+                        <p class="text-muted">Llena tus datos. Recibirás un PDF y un correo, Espera la confirmación por llamada.</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-right" data-aos-delay="300">
+                    <div class="position-relative p-4">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-calendar-check"></i></div>
+                        <h4 class="fw-bold">3. Recibe</h4>
+                        <p class="text-muted">Nuestro equipo entrega y monta todo en tu domicilio puntualmemte.</p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-aos="fade-right" data-aos-delay="400">
+                    <div class="position-relative p-4">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-emoji-laughing"></i></div>
+                        <h4 class="fw-bold">4. Disfruta</h4>
+                        <p class="text-muted">Celebra sin preocupaciones. Nosotros pasamos a recoger todo al final.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-dark text-white position-relative">
+    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/cubes.png'); opacity: 0.1;"></div>
+
+    <div class="container position-relative z-1 py-4">
+        <div class="text-center mb-5" data-aos="zoom-in">
+            <h5 class="text-warning text-uppercase fw-bold">Nuestros Clientes</h5>
+            <h2 class="display-5 fw-bold">Lo que dicen de nosotros</h2>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="flip-up" data-aos-delay="100">
+                <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="fst-italic">"El servicio fue impecable. Las carpas estaban limpias y llegaron 2 horas antes de lo acordado. ¡Salvaron mi boda de la lluvia!"</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="rounded-circle me-3" width="50">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Mariana López</h6>
+                                <small class="text-white-50">Boda en Jardín</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="flip-up" data-aos-delay="200">
+                <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="fst-italic">"Excelente atención. El sistema de cotización en la web es súper rápido y fácil de usar. Muy recomendados para eventos corporativos."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="rounded-circle me-3" width="50">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Ing. Carlos Ruíz</h6>
+                                <small class="text-white-50">Evento Empresarial</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4" data-aos="flip-up" data-aos-delay="300">
+                <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4">
+                    <div class="card-body">
+                        <div class="mb-3 text-warning">
+                            <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                        </div>
+                        <p class="fst-italic">"Tienen sillas y mesas muy bonitas, nada que ver con las de plástico de siempre. Le dieron mucha elegancia a la graduación."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle me-3" width="50">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Fernanda G.</h6>
+                                <small class="text-white-50">Graduación Escolar</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <section class="py-5 bg-light">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-right">
+                    <h5 class="text-warning text-uppercase fw-bold">Dudas Comunes</h5>
+                    <h2 class="fw-bold mb-4">Preguntas Frecuentes</h2>
+                    
+                    <div class="accordion shadow-sm" id="accordionFAQ">
+                        <div class="accordion-item border-0 mb-2 rounded">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    ¿Con cuánto tiempo debo reservar?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#accordionFAQ">
+                                <div class="accordion-body text-muted">
+                                    Recomendamos reservar al menos con 2 semanas de anticipación, especialmente para fechas de temporada alta (Diciembre, Mayo).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 mb-2 rounded">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    ¿Cuáles son las formas de pago?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                                <div class="accordion-body text-muted">
+                                    Aceptamos transferencia bancaria, y efectivo contra entrega. Requerimos un 50% de anticipo.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 rounded">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    ¿Cubren zonas fuera de Amecameca?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
+                                <div class="accordion-body text-muted">
+                                    Sí, cubrimos Chalco y zonas aledañas. Puede aplicar un costo extra de flete dependiendo la distancia.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="card border-0 shadow overflow-hidden h-100" style="min-height: 400px; border-radius: 20px;">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d60262.06642777642!2d-98.93285764042617!3d19.263300588691515!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85ce1e5170425371%3A0x6e76634cd702c2!2sChalco%20de%20D%C3%ADaz%20Covarrubias%2C%20M%C3%A9x.!5e0!3m2!1ses-419!2smx!4v1700000000000!5m2!1ses-419!2smx" 
+                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
+                        </iframe>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white pt-5 pb-3">
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h5>Carpas Montes</h5>
-                    <p class="small text-secondary">Expertos en montaje de carpas desde hace más de 25 años.</p>
+                <div class="col-md-4 mb-4">
+                    <h4 class="text-warning mb-3">Carpas Montes</h4>
+                    <p class="text-white-50">Con mas de 25 años de Experiencia en Monatjes. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.</p>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <h5>Contacto</h5>
-                    <ul class="list-unstyled text-secondary">
-                        <li><i class="bi bi-geo-alt"></i> Calle Falsa 123, Ciudad</li>
-                        <li><i class="bi bi-telephone"></i> +52 55 1234 5678</li>
-                        <li><i class="bi bi-envelope"></i> contacto@carpasmontes.com</li>
+                <div class="col-md-4 mb-4">
+                    <h5 class="mb-3">Contacto Rápido</h5>
+                    <ul class="list-unstyled text-white-50">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> Amecameca, Edo. Méx.</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 1234 5678</li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-3 text-md-end">
-                    <a href="prueba_api.php" class="btn btn-outline-light">Ir al Catálogo</a>
+                <div class="col-md-4 mb-4 text-center">
+                    <a href="prueba_api.php" class="btn btn-gold w-100 py-3">IR AL CATÁLOGO</a>
                 </div>
             </div>
             <hr class="border-secondary">
-            <div class="text-center small text-secondary">
-                &copy; 2026 Lonas & Carpas Montes. Todos los derechos reservados.
+            <div class="text-center text-secondary small">
+                &copy; 2026 Carpas Montes Todos los Derechos Reservados. Desarrollado Por Arturo M.
             </div>
         </div>
     </footer>
 
+    <a href="https://wa.me/525512345678" target="_blank" class="btn-whatsapp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Inicializar animaciones
+        AOS.init({
+            once: true, // Animación solo una vez al bajar
+            offset: 100 // Empieza antes de llegar al elemento
+        });
+
+        // Navbar cambia de color al bajar
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                document.querySelector('.navbar').classList.add('shadow');
+            } else {
+                document.querySelector('.navbar').classList.remove('shadow');
+            }
+        });
+    </script>
 </body>
 </html>

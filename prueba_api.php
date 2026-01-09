@@ -41,9 +41,12 @@ if ($cat_id) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo | <?php echo $titulo_pagina; ?></title>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="estilos.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
@@ -170,7 +173,7 @@ if ($cat_id) {
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
             ?>
                 <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
+                    <div class="card h-100 shadow-sm" data-aos="zoom-in">
                         <img src="<?php echo $img_src; ?>" class="card-img-top">
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title"><?php echo $label; ?></h5>
@@ -451,5 +454,7 @@ if ($cat_id) {
         } catch (e) { alert("Error de conexión"); }
     }
 </script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init();</script>
 </body>
 </html>
