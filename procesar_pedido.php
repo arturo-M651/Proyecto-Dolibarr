@@ -1,9 +1,8 @@
 <?php
 /**
- * PROCESAR_PEDIDO.PHP - VERSIÓN FINAL (ADJUNTO VÍA API)
+ * PROCESAR_PEDIDO.PHP - VERSIÓN FINAL SEGURA (CONFIG EXTERNO)
  */
 
-// Carga de librerías de correo
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -11,18 +10,22 @@ require 'PHPMailer/src/Exception.php';
 require 'PHPMailer/src/PHPMailer.php';
 require 'PHPMailer/src/SMTP.php';
 
+// 1. CARGAMOS CONFIGURACIÓN
+require_once 'config.php';
+
+// 2. MAPEO DE VARIABLES (¡ESTO ES LO QUE FALTABA!)
+// Convertimos las constantes de config.php a variables locales
+$api_url = DOL_BASE_URL; 
+$api_key = DOL_API_KEY;
+
 // PREVENIR BASURA EN EL JSON
 ob_start();
 
 header('Content-Type: application/json');
 
-// --- 1. CONFIGURACIÓN ---
-$api_url = "http://localhost/dolibarr/htdocs/api/index.php"; 
-$api_key = "55W05PsnTJuJRFg8lckZZ7hx10lM0Rz9"; 
-
-// --- 2. HELPER API ---
+// --- 3. HELPER API ---
 function callAPI($method, $url, $data = false) {
-    global $api_key;
+    global $api_key; // Ahora sí funcionará porque definimos $api_key arriba
     $curl = curl_init();
     $opts = [
         CURLOPT_URL => $url,
@@ -46,7 +49,7 @@ function callAPI($method, $url, $data = false) {
     return json_decode($result, true);
 }
 
-// --- 3. INPUT ---
+// --- 4. INPUT ---
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
     ob_end_clean();
@@ -56,7 +59,7 @@ if (!$input) {
 
 $tipo_accion = isset($input['tipo']) ? $input['tipo'] : 'cotizacion';
 
-// --- 4. TERCERO ---
+// --- 5. TERCERO ---
 $datos_cliente = [
     'name'        => $input['cliente'], 
     'client'      => 1, 
@@ -67,11 +70,11 @@ $datos_cliente = [
     'zip'         => $input['cp'],
     'town'        => $input['ciudad'],
     'idprof1'     => $input['rfc'],
-    'country_id'  => 154 
+    'country_id'  => ID_PAIS_MEXICO // Usando la constante de config.php
 ];
 $socid = callAPI('POST', $api_url . "/thirdparties", $datos_cliente);
 
-// --- 5. CABECERA DOCUMENTO ---
+// --- 6. CABECERA DOCUMENTO ---
 $fecha_entrega = strtotime($input['fecha']);
 $endpoint_creacion = ($tipo_accion === 'pedido') ? "/orders" : "/proposals";
 $datos_doc = [
@@ -96,7 +99,7 @@ if (isset($res_doc['error'])) {
 }
 $id_documento = $res_doc; 
 
-// --- 6. LÍNEAS ---
+// --- 7. LÍNEAS ---
 $endpoint_lineas = ($tipo_accion === 'pedido') ? "/orders/$id_documento/lines" : "/proposals/$id_documento/lines";
 foreach ($input['items'] as $item) {
     $linea = [
@@ -104,14 +107,14 @@ foreach ($input['items'] as $item) {
         'qty' => (double)$item['cant'],
         'subprice' => (double)$item['precio'], 
         'desc' => (string)$item['nombre'],
-        'tva_tx' => 16.0, 
+        'tva_tx' => IVA_TASA, // Usando constante de config.php
         'product_type' => 0
     ];
     $payload = ($tipo_accion === 'pedido') ? $linea : [$linea];
     callAPI('POST', $api_url . $endpoint_lineas, $payload);
 }
 
-// --- 7. VALIDAR ---
+// --- 8. VALIDAR ---
 $endpoint_val = ($tipo_accion === 'pedido') ? "/orders/$id_documento/validate" : "/proposals/$id_documento/validate";
 $params_val = [];
 if ($tipo_accion === 'pedido') {
@@ -121,11 +124,11 @@ if ($tipo_accion === 'pedido') {
 }
 callAPI('POST', $api_url . $endpoint_val, $params_val);
 
-// --- 8. GET REF ---
+// --- 9. GET REF ---
 $endpoint_get = ($tipo_accion === 'pedido') ? "/orders/$id_documento" : "/proposals/$id_documento";
 $doc_final = callAPI('GET', $api_url . $endpoint_get);
 
-// --- 9. GENERAR PDF (BUILDDOC) ---
+// --- 10. GENERAR PDF (BUILDDOC) ---
 $modulo_part = ($tipo_accion === 'pedido') ? "order" : "proposal";
 $modelo_pdf  = ($tipo_accion === 'pedido') ? "einstein" : "azur";
 $file_path   = $doc_final['ref'] . "/" . $doc_final['ref'] . ".pdf";
@@ -137,39 +140,33 @@ $build_data = [
     "langcode" => "es_MX"
 ];
 callAPI('PUT', $api_url . "/documents/builddoc", $build_data);
-sleep(1); // Breve espera técnica
+sleep(1); 
 
-// --- 10. ENVÍO DE CORREO (CON ADJUNTO VÍA API) ---
+// --- 11. ENVÍO DE CORREO (USANDO CONFIG.PHP) ---
 $mail = new PHPMailer(true);
 try {
-    // Configuración SMTP
     $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
+    // AQUI USAMOS LAS CONSTANTES SEGURAS
+    $mail->Host       = SMTP_HOST;
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'arturomontes49@gmail.com'; // <--- TU EMAIL
-    $mail->Password   = 'eosb nwqd wcja edbq';      // <--- TU APP PASSWORD
+    $mail->Username   = SMTP_USER; 
+    $mail->Password   = SMTP_PASS; 
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port       = 465;
+    $mail->Port       = SMTP_PORT;
     $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]];
 
-    $mail->setFrom('arturomontes49@gmail.com', 'Carpas Montes');
+    $mail->setFrom(SMTP_USER, 'Carpas Montes');
     $mail->addAddress($input['email'], $input['cliente']); 
 
-    // --- MAGIA AQUÍ: DESCARGAMOS EL PDF DE LA API Y LO ADJUNTAMOS EN MEMORIA ---
-    // Endpoint para descargar documentos
+    // Descarga y adjunto
     $url_descarga = $api_url . "/documents/download?modulepart=" . $modulo_part . "&original_file=" . urlencode($file_path);
-    
-    // Obtenemos el JSON con el base64
     $res_descarga = callAPI('GET', $url_descarga);
 
     if (isset($res_descarga['content'])) {
-        // Decodificamos el contenido
         $pdf_content = base64_decode($res_descarga['content']);
-        // Lo adjuntamos como cadena binaria (sin ruta fisica)
         $mail->addStringAttachment($pdf_content, $doc_final['ref'] . ".pdf");
     }
 
-    // Contenido del correo
     $mail->isHTML(true);
     $mail->CharSet = 'UTF-8';
     $mail->Subject = 'Confirmación ' . ucfirst($tipo_accion) . ' - ' . $doc_final['ref'];
@@ -185,9 +182,7 @@ try {
 
     $mail->send();
 
-} catch (Exception $e) {
-    // Ignoramos errores de correo para no bloquear la respuesta web
-}
+} catch (Exception $e) { }
 
 ob_end_clean();
 

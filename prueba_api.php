@@ -3,8 +3,10 @@
  * PRUEBA_API.PHP - VERSIÓN CON CARRUSEL DE CABECERA
  */
 
-$api_key = "55W05PsnTJuJRFg8lckZZ7hx10lM0Rz9"; 
-$url_base = "http://localhost/dolibarr/htdocs/api/index.php"; 
+require_once 'config.php'; // Cargamos el config
+
+$api_key = DOL_API_KEY; 
+$url_base = DOL_BASE_URL;
 
 function callAPI($url, $api_key) {
     $curl = curl_init();
