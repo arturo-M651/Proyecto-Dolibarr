@@ -255,7 +255,7 @@
                         </div>
                     </div>
                 </div>
-                  <div class="col-lg-6 h-100" data-aos="fade-left">
+                 <div class="col-lg-6 h-100" data-aos="fade-left">
                     <div class="card border-0 shadow overflow-hidden h-100" style="border-radius: 20px; min-height: 400px;">
                         <iframe 
                             width="100%" 
