@@ -17,6 +17,7 @@
         <div class="container">
             <a class="navbar-brand" href="index.php">
                 <div class="d-flex align-items-center">
+                    <img src="/img/logo.png" width="50" height="50">
                     <span class="fw-bold fs-3" style="color: var(--montes-cyan, #00b4db);">CARPAS</span>
                     <span class="fw-bold fs-3 ms-1" style="color: var(--montes-dark, #0e4c81);">MONTES</span>
                 </div>

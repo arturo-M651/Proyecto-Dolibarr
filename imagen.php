@@ -1,67 +1,64 @@
 <?php
-// imagen.php - Puente para leer imágenes de Dolibarr
+/**
+ * IMAGEN.PHP - Versión Lectura Directa (Disco Local)
+ * Lee los archivos directamente de la carpeta de documentos de Dolibarr
+ * para evitar bloqueos de HTTP/API.
+ */
 
-// CONFIGURACIÓN (Debe ser idéntica al otro archivo)
-$api_key = "55W05PsnTJuJRFg8lckZZ7hx10lM0Rz9"; 
-$url_base = "http://localhost/dolibarr/htdocs/api/index.php"; 
+// ==========================================
+// 1. CONFIGURACIÓN DE LA CARPETA
+// ==========================================
+// Ruta exacta de tus documentos en XAMPP
+$ruta_base = "C:/xampp/htdocs/dolibarr/documents"; 
 
-// Obtenemos parámetros
+// ==========================================
+
+// Limpiamos cualquier basura de salida anterior para evitar errores de imagen rota
+if (ob_get_level()) ob_end_clean();
+
 $ref = isset($_GET['ref']) ? $_GET['ref'] : '';
 $file = isset($_GET['file']) ? $_GET['file'] : '';
 
-// Función auxiliar para crear imagen gris de error (Por si falla Dolibarr)
-function mostrarImagenError($texto) {
+function servirImagenError($texto) {
+    // Crea una imagen gris con texto si falla la carga
     header("Content-Type: image/png");
-    $im = @imagecreate(300, 200) or die("Error GD");
-    $bg = imagecolorallocate($im, 240, 240, 240); // Gris claro
-    $text_color = imagecolorallocate($im, 100, 100, 100);
-    imagestring($im, 5, 80, 90,  $texto, $text_color);
+    $im = @imagecreate(300, 200);
+    $bg = imagecolorallocate($im, 240, 240, 240); // Fondo gris
+    $text_color = imagecolorallocate($im, 14, 76, 129); // Azul Montes
+    imagestring($im, 5, 80, 90, $texto, $text_color);
     imagepng($im);
     imagedestroy($im);
     exit;
 }
 
 if ($ref && $file) {
-    // Construimos la ruta interna que usa Dolibarr: product/REFERENCIA/ARCHIVO
-    $filepath = "product/" . $ref . "/" . $file;
-    
-    // Llamada al endpoint de descarga
-    $curl = curl_init();
-    $url = $url_base . "/document.php?hashp=pEZzxCvo1IoxHo8T7R7XS7xq5FH551g8" . urlencode($filepath);
+    // Seguridad básica: Evita que alguien intente leer archivos fuera de la carpeta
+    $ref = basename($ref); 
+    $file = basename($file);
 
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key),
-    ));
+    // Construimos la ruta completa donde Dolibarr guarda las fotos
+    // Estructura: documents/product/REFERENCIA/ARCHIVO
+    $ruta_archivo = $ruta_base . "/product/" . $ref . "/" . $file;
 
-    $result = curl_exec($curl);
-    $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    if ($http_code == 200) {
-        $data = json_decode($result, true);
+    // Verificamos si el archivo realmente existe en el disco
+    if (file_exists($ruta_archivo)) {
         
-        // Dolibarr suele devolver JSON con el contenido en base64
-        if (isset($data['content'])) {
-            header("Content-Type: " . $data['content-type']);
-            echo base64_decode($data['content']);
-        } 
-        // A veces (dependiendo de la config) devuelve el binario directo
-        elseif (isset($data['filename'])) { 
-             // Si llegara aquí, es un caso raro, pero manejable
-             mostrarImagenError("Formato no soportado");
-        }
-        else {
-             // Si devuelve binario puro sin JSON (raro en la API nueva, pero posible)
-             header("Content-Type: image/jpeg"); 
-             echo $result;
-        }
+        // Detectamos si es JPG, PNG, GIF, etc.
+        $mime = mime_content_type($ruta_archivo);
+        
+        // Le decimos al navegador qué tipo de archivo es
+        header("Content-Type: " . $mime);
+        header("Content-Length: " . filesize($ruta_archivo));
+        
+        // Enviamos la imagen directamente
+        readfile($ruta_archivo);
+        exit;
+        
     } else {
-        // Si Dolibarr dice 404 o Error
-        mostrarImagenError("Sin Foto");
+        // El archivo no está en la carpeta (quizás no has subido foto a ese producto)
+        servirImagenError("Archivo no encontrado");
     }
 } else {
-    mostrarImagenError("Faltan Datos");
+    servirImagenError("Datos incompletos");
 }
 ?>

@@ -101,6 +101,9 @@ if (GETPOST('sendit', 'alpha') && getDolGlobalString('MAIN_UPLOAD_DOC') && !empt
 			if (!empty($upload_dirold) && getDolGlobalInt('PRODUCT_USE_OLD_PATH_FOR_PHOTO')) {
 				$result = dol_add_file_process($upload_dirold, $allowoverwrite, 1, 'userfile', GETPOST('savingdocmask', 'alpha'), null, '', $generatethumbs, $object, $forceFullTextIndexation);
 			} elseif (!empty($upload_dir)) {
+								// --- PARCHE PARA CORREGIR WARNING ---
+				if (!isset($forceFullTextIndexation)) $forceFullTextIndexation = 0;
+				// ------------------------------------
 				$result = dol_add_file_process($upload_dir, $allowoverwrite, 1, 'userfile', GETPOST('savingdocmask', 'alpha'), null, '', $generatethumbs, $object, $forceFullTextIndexation);
 			}
 		}
