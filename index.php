@@ -207,7 +207,25 @@
         </div>
     </div>
 </section>
-
+<section class="confecciones-section">
+        <div class="container confecciones-content" data-aos="zoom-in">
+            <i class="bi bi-rulers fs-1 text-white mb-3"></i>
+            <h2>Fabricación y Confección</h2>
+            <p>
+                No solo rentamos, también creamos. Diseñamos lonas, carpas industriales, 
+                malla sombra y cubiertas a la medida exacta de tus necesidades. 
+                Calidad industrial para tu negocio o jardín.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="confecciones.php" class="btn btn-gold shadow-lg">
+                    <i class="bi bi-scissors me-2"></i> Ver Soluciones
+                </a>
+                <a href="https://wa.me/525512345678?text=Hola,%20me%20interesa%20una%20cotización%20de%20confección" class="btn btn-outline-gold">
+                    Cotizar Proyecto
+                </a>
+            </div>
+        </div>
+    </section>
     <section class="py-5 bg-light">
         <div class="container py-4">
             <div class="row align-items-center">
