@@ -158,6 +158,14 @@ if ($cat_id) {
                         <p class="fs-5 text-light">Elegancia y confort para tus invitados.</p>
                     </div>
                 </div>
+                <div class="carousel-item" style="height: 400px;">
+                    <img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Mobiliario'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
+                        <h2 class="display-5 fw-bold text-warning">Calidad en Montaje</h2>
+                        <p class="fs-5 text-light">Comodidad para tus invitados.</p>
+                    </div>
+                </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon"></span>
