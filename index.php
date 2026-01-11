@@ -17,7 +17,7 @@
     <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="#">
-                <i class="bi bi-balloon-heart-fill text-warning"></i> Carpas Montes
+                </i> Carpas Montes
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -207,6 +207,7 @@
         </div>
     </div>
 </section>
+
 <section class="confecciones-section">
         <div class="container confecciones-content" data-aos="zoom-in">
             <i class="bi bi-rulers fs-1 text-white mb-3"></i>
