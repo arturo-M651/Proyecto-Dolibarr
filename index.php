@@ -277,7 +277,7 @@
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <h4 class="text-warning mb-3">Carpas Montes</h4>
-                    <p class="text-white-50">Con mas de 25 años de Experiencia en Monatjes. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.</p>
+                    <p class="text-white-50">Con mas de 25 años de Experiencia en Montajes. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.</p>
                 </div>
                 <div class="col-md-4 mb-4">
                     <h5 class="mb-3">Contacto Rápido</h5>

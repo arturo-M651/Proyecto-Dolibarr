@@ -1,10 +1,9 @@
 <?php
 /**
- * PRUEBA_API.PHP - V3 (SIN BUGS VISUALES)
+ * PRUEBA_API.PHP - V4 (ESTÉTICA FINAL)
  */
 require_once 'config.php'; 
 
-// Mapeo seguro de variables
 $api_url = DOL_BASE_URL; 
 $api_key = DOL_API_KEY;
 
@@ -24,15 +23,13 @@ function callAPI($url, $api_key) {
 $lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 
-// Título dinámico
-$titulo_pagina = "Catálogo General";
+$titulo_pagina = "Nuestra Colección";
 if ($cat_id && is_array($lista_categorias)) {
     foreach($lista_categorias as $c) {
         if($c['id'] == $cat_id) $titulo_pagina = $c['label'];
     }
 }
 
-// Obtener productos
 $productos = [];
 if ($cat_id) {
     $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id;
@@ -46,6 +43,8 @@ if ($cat_id) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo | Carpas Montes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -59,7 +58,9 @@ if ($cat_id) {
             <i class="bi bi-balloon-heart-fill text-warning"></i> Carpas Montes
         </a>
         <div class="ms-auto d-flex align-items-center gap-3">
-            <a href="index.php" class="text-decoration-none fw-bold text-dark small d-none d-md-block">INICIO</a>
+            <a href="index.php" class="text-decoration-none fw-bold text-dark small d-none d-md-block">
+                <i class="bi bi-house-door"></i> INICIO
+            </a>
             <button class="btn btn-gold rounded-circle d-flex align-items-center justify-content-center shadow-sm position-relative" style="width:45px; height:45px;" data-bs-toggle="modal" data-bs-target="#modalCarrito">
                 <i class="bi bi-cart2 fs-5"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="contador">0</span>
@@ -72,7 +73,7 @@ if ($cat_id) {
     <div class="container">
         <div class="row align-items-center g-2">
             <div class="col-md-8">
-                <div class="d-flex align-items-center gap-2 overflow-auto" style="white-space: nowrap; padding-bottom: 5px;">
+                <div class="d-flex align-items-center gap-2 overflow-auto" style="white-space: nowrap; padding-bottom: 10px;">
                     <a href="prueba_api.php" class="cat-pill <?php echo ($cat_id == '') ? 'active' : ''; ?>">
                         <i class="bi bi-grid-fill me-1"></i> Todo
                     </a>
@@ -88,9 +89,9 @@ if ($cat_id) {
             </div>
             <div class="col-md-4">
                 <?php if ($cat_id): ?>
-                <div class="search-container d-flex align-items-center bg-white px-3 py-1 rounded-pill border">
+                <div class="search-container d-flex align-items-center bg-white px-3 py-1 rounded-pill border shadow-sm">
                     <i class="bi bi-search text-muted small"></i>
-                    <input type="text" id="buscadorJS" class="search-input bg-transparent border-0 ms-2 w-100" placeholder="Buscar..." style="font-size: 0.9rem; outline:none;">
+                    <input type="text" id="buscadorJS" class="search-input bg-transparent border-0 ms-2 w-100" placeholder="Buscar producto..." style="font-size: 0.9rem; outline:none;">
                 </div>
                 <?php endif; ?>
             </div>
@@ -98,28 +99,30 @@ if ($cat_id) {
     </div>
 </div>
 
-<div class="container py-4">
+<div class="container py-4" style="min-height: 80vh;">
 
     <?php if (!$cat_id): ?>
         
-        <div id="carruselHome" class="carousel slide mb-5 rounded-4 overflow-hidden shadow" data-bs-ride="carousel" data-bs-interval="3000">
+        <div id="carruselHome" class="carousel slide mb-4 rounded-4 overflow-hidden shadow-lg" data-bs-ride="carousel" data-bs-interval="4000" data-aos="zoom-in">
             <div class="carousel-indicators">
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="0" class="active"></button>
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="1"></button>
             </div>
             <div class="carousel-inner">
-                <div class="carousel-item active" style="height: 350px;">
+                <div class="carousel-item active" style="height: 400px;">
                     <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 1"
                          onerror="this.src='https://images.unsplash.com/photo-1519167758481-83f550bb49b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
-                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
-                        <h2 class="fw-bold">Eventos Inolvidables</h2>
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
+                        <h2 class="display-5 fw-bold text-warning">Eventos Inolvidables</h2>
+                        <p class="fs-5 text-light">Todo lo necesario para tu celebración.</p>
                     </div>
                 </div>
-                <div class="carousel-item" style="height: 350px;">
+                <div class="carousel-item" style="height: 400px;">
                     <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2"
                          onerror="this.src='https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'">
-                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
-                        <h2 class="fw-bold">Mobiliario Premium</h2>
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
+                        <h2 class="display-5 fw-bold text-warning">Mobiliario Premium</h2>
+                        <p class="fs-5 text-light">Elegancia y confort para tus invitados.</p>
                     </div>
                 </div>
             </div>
@@ -131,23 +134,72 @@ if ($cat_id) {
             </button>
         </div>
 
-        <h3 class="text-center mb-4 fw-bold text-secondary">Nuestras Categorías</h3>
+       <div class="container benefits-section mb-5" data-aos="fade-up">
+            <div class="row g-4">
+                
+                <div class="col-md-4">
+                    <div class="benefit-card">
+                        <div class="benefit-icon-wrapper">
+                            <i class="bi bi-stopwatch"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Puntualidad Garantizada</h4>
+                        <p class="text-muted small">Sabemos que el tiempo es oro. Tu montaje estará listo exactamente cuando lo necesitas, sin estrés.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="benefit-card">
+                        <div class="benefit-icon-wrapper">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Impecable y Limpio</h4>
+                        <p class="text-muted small">Nuestro mobiliario pasa por un estricto proceso de limpieza y mantenimiento antes de cada evento.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="benefit-card">
+                        <div class="benefit-icon-wrapper">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Seguridad y Confianza</h4>
+                        <p class="text-muted small">Instalación profesional por expertos. Estructuras sólidas y seguras para tu tranquilidad.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mb-4" data-aos="fade-up">
+            <h2 class="fw-bold text-dark">Explora por Categorías</h2>
+            <div style="width: 60px; height: 3px; background: var(--gold); margin: 10px auto;"></div>
+        </div>
+
         <div class="row g-4">
             <?php
             if (is_array($lista_categorias) && !isset($lista_categorias['error'])) {
                 foreach ($lista_categorias as $cat) {
-                    // Lógica de imagen robusta (intenta local, si falla JS lo arregla)
+                    // Ruta de imagen local
                     $img_cat = "img_categorias/" . $cat['id'] . ".jpg";
             ?>
-                <div class="col-md-6 col-lg-4" data-aos="fade-up">
-                    <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card d-block text-decoration-none shadow position-relative overflow-hidden rounded-4">
-                        <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>" class="w-100 h-100 object-fit-cover"
-                             onerror="this.onerror=null; this.src='https://source.unsplash.com/random/400x300/?event,<?php echo urlencode($cat['label']); ?>';">
-                        <div class="cat-overlay position-absolute bottom-0 start-0 w-100 p-3" 
-                             style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-                            <h4 class="mb-0 text-white"><?php echo $cat['label']; ?></h4>
-                            <small class="text-warning">Ver catálogo <i class="bi bi-arrow-right"></i></small>
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-duration="800">
+                    <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none">
+                        
+                        <img src="<?php echo $img_cat; ?>" 
+                             alt="<?php echo $cat['label']; ?>" 
+                             class="transition-hover"
+                             onerror="this.onerror=null; this.src='https://source.unsplash.com/random/600x800/?event,party,<?php echo urlencode($cat['label']); ?>';">
+                        
+                        <div class="cat-overlay position-absolute bottom-0 start-0 w-100">
+                            <h3 class="mb-1 text-white fw-bold display-6" style="font-size: 1.8rem; font-family: 'Playfair Display', serif;">
+                                <?php echo $cat['label']; ?>
+                            </h3>
+                            <div class="d-flex align-items-center text-warning fw-bold text-uppercase small ls-1 mt-2">
+                                <span>Explorar</span> 
+                                <i class="bi bi-arrow-right ms-2 animate-arrow"></i>
+                            </div>
                         </div>
+
                     </a>
                 </div>
             <?php
@@ -157,12 +209,15 @@ if ($cat_id) {
         </div>
     
     <?php else: ?>
-        <h3 class="mb-4 fw-bold text-secondary"><?php echo $titulo_pagina; ?></h3>
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h2 class="fw-bold text-dark mb-0"><?php echo $titulo_pagina; ?></h2>
+            <a href="prueba_api.php" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Volver</a>
+        </div>
         
         <div class="row g-4" id="contenedorProductos">
             <?php
             if (isset($productos['error']) || empty($productos)) {
-                echo "<div class='col-12 text-center py-5'><i class='bi bi-box-seam display-1 text-muted'></i><p class='mt-3'>Sin productos.</p></div>";
+                echo "<div class='col-12 text-center py-5'><i class='bi bi-box-seam display-1 text-muted'></i><p class='mt-3 lead'>No hay productos aquí.</p></div>";
             } else {
                 foreach ($productos as $producto) {
                     $id = $producto['id'];
@@ -171,30 +226,33 @@ if ($cat_id) {
                     $price = (float)$producto['price']; 
                     $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
                     
-                    // Imagen Producto
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
             ?>
                 <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-aos="zoom-in">
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
                         
-                        <div class="product-img-wrapper position-relative cursor-pointer" style="height: 200px; overflow: hidden;"
+                        <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
                              onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" 
                                  onerror="this.src='https://via.placeholder.com/300x300?text=Sin+Foto'">
-                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-dark text-warning shadow">$<?php echo number_format($price, 2); ?></span>
+                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge">
+                                $<?php echo number_format($price, 2); ?>
+                            </span>
                         </div>
 
                         <div class="p-3 d-flex flex-column flex-grow-1">
-                            <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
-                            <small class="text-muted mb-3 small d-block text-truncate"><?php echo strip_tags($desc); ?></small>
+                            <h6 class="fw-bold text-dark mb-1 text-truncate" style="font-family: 'Lato', sans-serif;"><?php echo $label; ?></h6>
+                            <small class="text-muted mb-3 small product-desc-clamp"><?php echo strip_tags($desc); ?></small>
                             
-                            <div class="mt-auto d-flex justify-content-between align-items-center">
-                                <button class="btn btn-sm btn-light text-primary fw-bold" 
-                                        onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">Ver</button>
-                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" style="width:32px; height:32px;"
+                            <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
+                                <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
+                                        onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
+                                    Ver
+                                </button>
+                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:35px; height:35px;"
                                         onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
-                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-plus-lg"></i>
                                 </button>
                             </div>
                         </div>
@@ -208,6 +266,40 @@ if ($cat_id) {
         </div>
     <?php endif; ?>
 </div>
+
+<footer class="bg-dark text-white pt-5 pb-3 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h4 class="text-warning mb-3 fw-bold">Carpas Montes</h4>
+                <p class="text-white-50 small">Expertos en infraestructura para eventos. Calidad y servicio en Amecameca y alrededores.</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <h5 class="mb-3 fw-bold">Contacto</h5>
+                <ul class="list-unstyled text-white-50 small">
+                    <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
+                    <li class="mb-2"><i class="bi bi-whatsapp me-2"></i> 55 1234 5678</li>
+                    <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
+                </ul>
+            </div>
+            <div class="col-md-4 mb-4 text-center">
+                <h5 class="mb-3 fw-bold">Redes Sociales</h5>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="border-secondary">
+        <div class="text-center text-secondary small">
+            &copy; 2026 Carpas Montes. Todos los derechos reservados.
+        </div>
+    </div>
+</footer>
+
+<a href="https://wa.me/525512345678" target="_blank" class="btn-whatsapp-float shadow-lg">
+    <i class="bi bi-whatsapp"></i>
+</a>
 
 <div class="modal fade" id="modalCantidad" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
