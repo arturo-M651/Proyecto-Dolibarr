@@ -138,41 +138,70 @@ if ($cat_id) {
     <?php if (!$cat_id): ?>
         
         <div id="carruselHome" class="carousel slide mb-4 rounded-4 overflow-hidden shadow-lg" data-bs-ride="carousel" data-bs-interval="4000" data-aos="zoom-in">
+            
             <div class="carousel-indicators">
-                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="0" class="active"></button>
-                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="4" aria-label="Slide 5"></button>
             </div>
+
             <div class="carousel-inner">
-                <div class="carousel-item active" style="height: 400px;">
-                    <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 1"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Eventos'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
+                
+                <div class="carousel-item active" style="height: 450px;"> <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Evento Grande"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Gran+Evento'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Eventos Inolvidables</h2>
-                        <p class="fs-5 text-light">Todo lo necesario para tu celebración.</p>
+                        <p class="fs-5 text-white">Todo lo necesario para tu celebración.</p>
                     </div>
                 </div>
-                <div class="carousel-item" style="height: 400px;">
-                    <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Mobiliario'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
-                        <h2 class="display-5 fw-bold text-warning">Mobiliario Premium</h2>
-                        <p class="fs-5 text-light">Elegancia y confort para tus invitados.</p>
+
+                <div class="carousel-item" style="height: 450px;">
+                    <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Iluminación"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Iluminación'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                        <h2 class="display-5 fw-bold text-warning">Ambiente Mágico</h2>
+                        <p class="fs-5 text-white">Iluminación que transforma espacios.</p>
                     </div>
                 </div>
-                <div class="carousel-item" style="height: 400px;">
-                    <img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Banner 2"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Mobiliario'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);">
-                        <h2 class="display-5 fw-bold text-warning">Calidad en Montaje</h2>
-                        <p class="fs-5 text-light">Comodidad para tus invitados.</p>
+
+                <div class="carousel-item" style="height: 450px;">
+                    <img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpas Hule"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Montaje+Profesional'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                        <h2 class="display-5 fw-bold text-warning">Protección Total</h2>
+                        <p class="fs-5 text-white">Estructuras resistentes para cualquier clima.</p>
                     </div>
                 </div>
+
+                <div class="carousel-item" style="height: 450px;">
+                    <img src="carrusel/arcoiris.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Arcoiris"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Diseño+Creativo'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                        <h2 class="display-5 fw-bold text-warning">Diseños Únicos</h2>
+                        <p class="fs-5 text-white">Color y estilo para destacar tu evento.</p>
+                    </div>
+                </div>
+
+                <div class="carousel-item" style="height: 450px;">
+                    <img src="carrusel/carpa.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpa Standard"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Calidad+Montes'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                        <h2 class="display-5 fw-bold text-warning">Calidad Garantizada</h2>
+                        <p class="fs-5 text-white">Comodidad y elegancia para tus invitados.</p>
+                    </div>
+                </div>
+
             </div>
+
             <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
+                <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
             </button>
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
+                <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
             </button>
         </div>
 
