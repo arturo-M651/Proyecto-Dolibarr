@@ -247,8 +247,8 @@ if ($cat_id) {
                             
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
-                                        onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
-                                    Ver
+                                    onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
+                                    <i class="bi bi-eye"></i> Ver
                                 </button>
                                 <button class="btn btn-gold btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:35px; height:35px;"
                                         onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
@@ -317,17 +317,55 @@ if ($cat_id) {
     </div>
 </div>
 
-<div class="modal fade" id="modalDetalles" tabindex="-1">
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="detalleTitulo"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            
+            <div class="modal-header border-0 absolute-top-right" style="position: absolute; right: 0; z-index: 10;">
+                <button type="button" class="btn-close m-2 bg-white p-2 rounded-circle shadow-sm opacity-100" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <h2 class="text-gold fw-bold mb-3" id="detallePrecio"></h2>
-                <div class="bg-light p-3 rounded text-secondary mb-3 small" id="detalleDesc"></div>
-                <div id="galeriaContenedor" class="row g-2"></div>
+
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    
+                    <div class="col-lg-7">
+                        <div class="modal-gallery-area">
+                            <div class="main-image-container">
+                                <img id="imgPrincipal" src="" alt="Producto">
+                            </div>
+                            <div class="thumbnails-row" id="galeriaContenedor">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="modal-info-area d-flex flex-column h-100 p-4">
+                            
+                            <small class="text-uppercase text-muted fw-bold ls-1 mb-2" style="font-size: 0.75rem;">Detalles del Producto</small>
+                            
+                            <h3 class="fw-bold mb-2" id="detalleTitulo" style="font-family: 'Playfair Display', serif;"></h3>
+                            
+                            <h2 class="text-gold fw-bold mb-4" id="detallePrecio"></h2>
+                            
+                            <div class="mb-4">
+                                <h6 class="fw-bold small text-dark">Descripción:</h6>
+                                <p class="text-muted small lh-lg" id="detalleDesc"></p>
+                            </div>
+
+                            <div class="mt-auto pt-3 border-top">
+                                <label class="small fw-bold mb-2">Cantidad:</label>
+                                <div class="d-flex gap-2">
+                                    <input type="number" id="inputCantidadDetalle" class="form-control text-center fw-bold" value="1" min="1" style="width: 70px;">
+                                    <button class="btn btn-gold w-100 rounded-pill shadow-sm" onclick="agregarDesdeDetalle()">
+                                        <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
@@ -399,24 +437,89 @@ if ($cat_id) {
     }
 
     // DETALLES
-    async function verDetalles(ref, nombre, desc, precio) {
+   // VARIABLES GLOBALES PARA EL MODAL
+    let currentProductoId = null;
+    let currentProductoPrecio = 0;
+    let currentProductoNombre = "";
+
+    // FUNCIÓN DETALLES MEJORADA
+    async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
+        // 1. Guardar datos para el botón de compra
+        currentProductoId = id;
+        currentProductoNombre = nombre;
+        currentProductoPrecio = precio;
+
+        // 2. Llenar Textos
         document.getElementById('detalleTitulo').innerText = nombre;
         document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-        document.getElementById('detalleDesc').innerHTML = desc || 'Sin descripción.';
+        document.getElementById('detalleDesc').innerHTML = desc || 'Sin descripción disponible.';
+        document.getElementById('inputCantidadDetalle').value = 1; // Reset cantidad
+
+        // 3. Poner Imagen Principal Inmediata
+        const imgPrincipal = document.getElementById('imgPrincipal');
+        imgPrincipal.src = imgMain;
+        
+        // 4. Limpiar Galería y Poner Loader
         const contenedor = document.getElementById('galeriaContenedor');
-        contenedor.innerHTML = '<div class="spinner-border text-warning"></div>';
+        contenedor.innerHTML = '<div class="spinner-border spinner-border-sm text-warning mx-auto"></div>';
+        
+        // 5. Mostrar Modal
         modalDetallesBootstrap.show();
 
+        // 6. Cargar Imágenes Extra
         try {
             const res = await fetch(`obtener_fotos.php?ref=${ref}&t=${Date.now()}`);
             const fotos = await res.json();
-            contenedor.innerHTML = ''; 
+            contenedor.innerHTML = ''; // Limpiar loader
+
+            // Agregamos la foto principal como primera miniatura
+            let htmlFotos = `<img src="${imgMain}" class="thumb-img active" onclick="cambiarImagen(this.src, this)">`;
+
             if (fotos.length) {
                 fotos.forEach(url => {
-                    contenedor.innerHTML += `<div class="col-4"><img src="${encodeURI(url)}" class="img-fluid rounded shadow-sm" onclick="window.open('${encodeURI(url)}')"></div>`;
+                    // Evitar duplicar la principal si ya viene en la lista
+                    if(url !== imgMain) {
+                        htmlFotos += `<img src="${encodeURI(url)}" class="thumb-img" onclick="cambiarImagen(this.src, this)">`;
+                    }
                 });
-            } else { contenedor.innerHTML = '<small class="text-muted col-12">No hay imágenes adicionales.</small>'; }
-        } catch (e) { contenedor.innerHTML = 'Error.'; }
+            }
+            contenedor.innerHTML = htmlFotos;
+
+        } catch (e) { 
+            contenedor.innerHTML = '<small class="text-muted">Error cargando galería.</small>'; 
+        }
+    }
+
+    // FUNCIÓN PARA CAMBIAR FOTO PRINCIPAL AL CLICKEAR MINIATURA
+    function cambiarImagen(src, elemento) {
+        // Cambiar foto grande
+        const main = document.getElementById('imgPrincipal');
+        main.style.opacity = 0; // Efecto fade
+        setTimeout(() => {
+            main.src = src;
+            main.style.opacity = 1;
+        }, 200);
+
+        // Actualizar borde activo
+        document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('active'));
+        elemento.classList.add('active');
+    }
+
+    // FUNCIÓN PARA COMPRAR DESDE EL MODAL DETALLE
+    function agregarDesdeDetalle() {
+        let cant = parseInt(document.getElementById('inputCantidadDetalle').value);
+        if (cant < 1) return;
+
+        // Reutilizamos la lógica de tu carrito
+        let exist = carrito.find(i => i.id == currentProductoId);
+        if (exist) exist.cant += cant; 
+        else carrito.push({ id: currentProductoId, nombre: currentProductoNombre, precio: currentProductoPrecio, cant: cant });
+        
+        guardar(); // Actualiza localStorage y contador
+        modalDetallesBootstrap.hide(); // Cierra modal
+        
+        // Feedback visual opcional (Alert suave)
+        alert("¡Producto agregado al carrito!");
     }
 
     // CARRITO
