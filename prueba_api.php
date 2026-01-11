@@ -381,14 +381,46 @@ if ($cat_id) {
             </div>
             <div class="modal-body p-0">
                 <div class="row g-0">
-                    <div class="col-lg-7">
-                        <div class="modal-gallery-area">
-                            <div class="main-image-container">
-                                <img id="imgPrincipal" src="" alt="Producto">
-                            </div>
-                            <div class="thumbnails-row" id="galeriaContenedor"></div>
+                    <div class="col-lg-7 bg-light">
+                          <div class="modal-gallery-area p-3 h-100 d-flex flex-column"> 
+                                <ul class="nav nav-pills mb-3 justify-content-center gap-2" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active rounded-pill small fw-bold" id="pills-foto-tab" data-bs-toggle="pill" data-bs-target="#pills-foto" type="button" role="tab">
+                                            <i class="bi bi-images me-1"></i> Fotos
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link rounded-pill small fw-bold" id="pills-plano-tab" data-bs-toggle="pill" data-bs-target="#pills-plano" type="button" role="tab" onclick="iniciarRender()">
+                                            <i class="bi bi-grid-3x3 me-1"></i> Simulador de Espacio
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content flex-grow-1 d-flex flex-column" id="pills-tabContent">
+                                    
+                                    <div class="tab-pane fade show active h-100" id="pills-foto" role="tabpanel">
+                                        <div class="main-image-container mb-2" style="height: 350px;"> <img id="imgPrincipal" src="" alt="Producto" class="w-100 h-100 object-fit-contain rounded-3">
+                                        </div>
+                                        <div class="thumbnails-row" id="galeriaContenedor"></div>
+                                    </div>
+
+                                    <div class="tab-pane fade h-100" id="pills-plano" role="tabpanel">
+                                        <div class="card border-0 shadow-sm h-100">
+                                            <div class="card-body p-0 position-relative bg-white rounded-3 d-flex align-items-center justify-content-center overflow-hidden">
+                                                <canvas id="canvasPlano" width="500" height="400"></canvas>
+                                                
+                                                <div class="position-absolute top-0 end-0 m-3 badge bg-dark shadow">
+                                                    <i class="bi bi-arrows-fullscreen"></i> Área Total: <span id="lblAreaTotal">0</span> m²
+                                                </div>
+                                            </div>
+                                            <div class="card-footer bg-white border-0 text-center text-muted small">
+                                                <i class="bi bi-info-circle"></i> Cada cuadro de la rejilla representa 1 metro cuadrado.
+                                            </div>
+                                      </div>
+                                    </div>    
+                              </div>
+                           </div>
                         </div>
-                    </div>
                     <div class="col-lg-5">
                         <div class="modal-info-area d-flex flex-column h-100 p-4">
                             <small class="text-uppercase text-muted fw-bold ls-1 mb-2" style="font-size: 0.75rem;">Detalles del Producto</small>
@@ -399,11 +431,41 @@ if ($cat_id) {
                                 <p class="text-muted small lh-lg" id="detalleDesc"></p>
                             </div>
                             <div class="mt-auto pt-3 border-top">
-                                <label class="small fw-bold mb-2">Cantidad:</label>
+    
+                                <div id="panelMedidas" class="mb-3 p-3 bg-light rounded-3 border" style="display:none;">
+                                    <label class="small fw-bold text-primary mb-2 d-block">
+                                        <i class="bi bi-rulers"></i> Configurar Medidas
+                                    </label>
+                                    
+                                    <div class="row g-2 align-items-center">
+                                        <div class="col-5">
+                                            <div class="form-floating">
+                                                <input type="number" class="form-control form-control-sm fw-bold bg-white" id="inputAncho" value="10" readonly>
+                                                <label for="inputAncho">Ancho (m)</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-2 text-center text-muted">x</div>
+                                        <div class="col-5">
+                                            <div class="form-floating">
+                                                <input type="number" class="form-control form-control-sm fw-bold border-warning" id="inputLargo" value="5" min="3" step="1" oninput="actualizarCalculosRender()">
+                                                <label for="inputLargo">Largo (m)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 text-end">
+                                        <small class="text-muted">Capacidad aprox: <strong id="lblCapacidad" class="text-dark">50</strong> personas</small>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex gap-2">
-                                    <input type="number" id="inputCantidadDetalle" class="form-control text-center fw-bold" value="1" min="1" style="width: 70px;">
-                                    <button class="btn btn-gold w-100 rounded-pill shadow-sm" onclick="agregarDesdeDetalle()">
-                                        <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
+                                    <div id="divCantidadNormal">
+                                        <label class="small fw-bold mb-1">Cant:</label>
+                                        <input type="number" id="inputCantidadDetalle" class="form-control text-center fw-bold" value="1" min="1" style="width: 70px;">
+                                    </div>
+                                    
+                                    <button class="btn btn-gold w-100 rounded-pill shadow-sm d-flex justify-content-center align-items-center flex-column" onclick="agregarDesdeDetalle()">
+                                        <span><i class="bi bi-cart-plus me-1"></i> Agregar al Pedido</span>
+                                        <small id="lblPrecioTotal" style="font-size: 0.7em; opacity: 0.9;"></small>
                                     </button>
                                 </div>
                             </div>
@@ -467,6 +529,10 @@ if ($cat_id) {
     let tempProducto = null; // Para guardar temporalmente al dar clic en '+'
     let currentProductoData = {}; // Para el modal de detalles
     
+    // Variables para Carpas Modulares
+    let esCarpaModular = false;
+    let anchoFijo = 0;
+    
     // Instancias de Modales Bootstrap
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
     const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
@@ -482,40 +548,79 @@ if ($cat_id) {
             const texto = e.target.value.toLowerCase();
             document.querySelectorAll('.item-producto').forEach(item => {
                 const nombre = item.getAttribute('data-nombre');
-                // Operador ternario: Si coincide muestra, si no oculta
                 item.style.display = nombre.includes(texto) ? 'block' : 'none';
             });
         });
     }
 
-    // --- LÓGICA DE DETALLES DEL PRODUCTO ---
+    // --- FUNCIÓN PRINCIPAL: VER DETALLES (UNIFICADA) ---
     async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
         // Guardar estado actual
-        currentProductoData = { id, nombre, precio };
+        currentProductoId = id;
+        currentProductoNombre = nombre;
+        currentProductoPrecio = precio;
 
-        // Llenar UI del Modal
+        // UI Reset Básica
         document.getElementById('detalleTitulo').innerText = nombre;
-        document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
         document.getElementById('detalleDesc').innerHTML = desc || '<em class="text-muted">Sin descripción.</em>';
         document.getElementById('inputCantidadDetalle').value = 1;
-
-        // Configurar imagen principal
+        
+        // Imagen Principal
         const imgPrincipal = document.getElementById('imgPrincipal');
         imgPrincipal.src = imgMain;
         
-        // Loader para galería
-        const contenedor = document.getElementById('galeriaContenedor');
-        contenedor.innerHTML = '<div class="spinner-border spinner-border-sm text-warning mx-auto"></div>';
-        
+        // 1. LÓGICA DE DETECCIÓN INTELIGENTE (CARPAS)
+            // Ahora detecta "ancho", "carpa" o "toldo"
+            if (nombre.toLowerCase().includes("ancho") || nombre.toLowerCase().includes("carpa") || nombre.toLowerCase().includes("toldo")) {
+                        esCarpaModular = true;
+            
+            // Extraer número del ancho (ej: "10")
+            const match = nombre.match(/(\d+)/);
+            anchoFijo = match ? parseInt(match[0]) : 10; 
+            
+            // Configurar UI para Carpas
+            document.getElementById('panelMedidas').style.display = 'block';
+            document.getElementById('divCantidadNormal').style.display = 'none'; 
+            document.getElementById('pills-plano-tab').style.display = 'block'; 
+            
+            // Valores iniciales
+            document.getElementById('inputAncho').value = anchoFijo;
+            document.getElementById('inputLargo').value = 5; 
+            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / metro lineal";
+            document.getElementById('lblPrecioTotal').innerText = ""; 
+
+            actualizarCalculosRender(); // Dibujar plano inicial
+
+        } else {
+            // PRODUCTO NORMAL
+            esCarpaModular = false;
+            
+            // Configurar UI Normal
+            document.getElementById('panelMedidas').style.display = 'none';
+            document.getElementById('divCantidadNormal').style.display = 'block';
+            document.getElementById('pills-plano-tab').style.display = 'none'; 
+            
+            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
+            document.getElementById('lblPrecioTotal').innerText = "";
+            
+            // Forzar pestaña de fotos
+            const tabBtn = document.querySelector('#pills-foto-tab');
+            const tab = new bootstrap.Tab(tabBtn);
+            tab.show();
+        }
+
+        // Mostrar Modal
         modalDetallesBootstrap.show();
 
-        // Cargar imágenes adicionales via AJAX
+        // 2. CARGAR GALERÍA DE FOTOS EXTRA
+        const contenedor = document.getElementById('galeriaContenedor');
+        contenedor.innerHTML = '<div class="spinner-border spinner-border-sm text-warning mx-auto"></div>';
+
         try {
             const res = await fetch(`obtener_fotos.php?ref=${ref}&t=${Date.now()}`);
             const fotos = await res.json();
             contenedor.innerHTML = ''; 
 
-            // Insertar miniaturas
             let htmlFotos = `<img src="${imgMain}" class="thumb-img active" onclick="cambiarImagen(this.src, this)">`;
             if (fotos.length) {
                 fotos.forEach(url => {
@@ -530,7 +635,97 @@ if ($cat_id) {
         }
     }
 
-    // Intercambiar foto principal
+    // --- FUNCIONES DEL SIMULADOR (RENDER) ---
+    function iniciarRender() {
+        requestAnimationFrame(dibujarPlano);
+    }
+
+    function actualizarCalculosRender() {
+        if(!esCarpaModular) return;
+
+        const largo = parseInt(document.getElementById('inputLargo').value) || 0;
+        const ancho = anchoFijo;
+        const area = largo * ancho;
+        const precioMetro = currentProductoPrecio;
+        
+        // Calcular Totales
+        const total = precioMetro * largo;
+        document.getElementById('lblPrecioTotal').innerText = `Total: $${total.toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
+        
+        // Calcular Capacidad
+        const capacidad = Math.floor(area / 1.5); 
+        document.getElementById('lblCapacidad').innerText = `${capacidad} - ${Math.floor(area/1)} personas`;
+        document.getElementById('lblAreaTotal').innerText = area;
+
+        dibujarPlano();
+    }
+
+    function dibujarPlano() {
+        const canvas = document.getElementById('canvasPlano');
+        if (!canvas) return; // Seguridad
+        const ctx = canvas.getContext('2d');
+        const largo = parseInt(document.getElementById('inputLargo').value) || 5;
+        const ancho = anchoFijo;
+
+        // Limpiar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Escala
+        const padding = 40;
+        const maxW = canvas.width - (padding * 2);
+        const maxH = canvas.height - (padding * 2);
+        const scaleX = maxW / ancho; 
+        const scaleY = maxH / largo;
+        const escala = Math.min(scaleX, scaleY, 40);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const rectW = ancho * escala;
+        const rectH = largo * escala;
+        const startX = cx - (rectW / 2);
+        const startY = cy - (rectH / 2);
+
+        // Grid
+        ctx.beginPath();
+        ctx.strokeStyle = "#e0e0e0";
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * escala), startY, 0, rectH); // Verticales (truco visual)
+        for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * escala), rectW, 0); // Horizontales
+        // Nota: El loop anterior dibuja lineas usando rects vacíos, es válido. O usar moveTo/lineTo.
+        
+        // Contorno Carpa
+        ctx.strokeStyle = "#0e4c81";
+        ctx.lineWidth = 3;
+        ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
+        ctx.fillRect(startX, startY, rectW, rectH);
+        ctx.strokeRect(startX, startY, rectW, rectH);
+
+        // Cotas
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(`${ancho}m`, cx, startY - 10);
+        
+        ctx.save();
+        ctx.translate(startX - 15, cy);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText(`${largo}m`, 0, 0);
+        ctx.restore();
+
+        // Mesas (Decoración)
+        if (escala > 15) {
+            ctx.fillStyle = "rgba(212, 175, 55, 0.3)";
+            for (let x = 0.5; x < ancho; x += 2) {
+                for (let y = 0.5; y < largo; y += 2) {
+                    ctx.beginPath();
+                    ctx.arc(startX + (x * escala), startY + (y * escala), escala * 0.4, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+
+    // --- INTERACCIÓN UI ---
     function cambiarImagen(src, elemento) {
         const main = document.getElementById('imgPrincipal');
         main.style.opacity = 0; 
@@ -538,14 +733,13 @@ if ($cat_id) {
             main.src = src;
             main.style.opacity = 1;
         }, 200);
-        
         document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('active'));
         elemento.classList.add('active');
     }
 
-    // --- LÓGICA DEL CARRITO ---
+    // --- CARRITO ---
     
-    // Opción 1: Agregar desde lista rápida (+)
+    // 1. Agregar desde el botón rápido (+)
     function prepararAgregar(id, nombre, precio) {
         tempProducto = { id, nombre, precio };
         document.getElementById('lblProductoSeleccionado').innerText = nombre;
@@ -560,15 +754,47 @@ if ($cat_id) {
         modalCantidadBootstrap.hide();
     }
 
-    // Opción 2: Agregar desde Modal Detalles
+    // 2. Agregar desde el Modal Detalles (UNIFICADA)
     function agregarDesdeDetalle() {
-        let cant = parseInt(document.getElementById('inputCantidadDetalle').value);
-        if (cant < 1) return;
-        agregarAlCarrito(currentProductoData, cant);
+        let itemParaCarrito = {};
+
+        if (esCarpaModular) {
+            // Lógica Modular
+            const largo = parseInt(document.getElementById('inputLargo').value);
+            const ancho = anchoFijo;
+            
+            itemParaCarrito = {
+                id: currentProductoId,
+                nombre: `${currentProductoNombre} (Medida: ${ancho}x${largo}m)`, 
+                precio: currentProductoPrecio, 
+                cant: largo, 
+                esModular: true
+            };
+        } else {
+            // Lógica Normal
+            const cant = parseInt(document.getElementById('inputCantidadDetalle').value);
+            itemParaCarrito = {
+                id: currentProductoId,
+                nombre: currentProductoNombre,
+                precio: currentProductoPrecio,
+                cant: cant
+            };
+        }
+
+        // Agregar al array
+        let exist = carrito.find(i => i.nombre === itemParaCarrito.nombre);
+        if (exist) {
+            exist.cant += itemParaCarrito.cant;
+        } else {
+            carrito.push(itemParaCarrito);
+        }
+        
+        guardar();
         modalDetallesBootstrap.hide();
+        // Feedback
+        alert("Agregado al pedido correctamente");
     }
 
-    // Función centralizada para modificar el array carrito
     function agregarAlCarrito(producto, cantidad) {
         let exist = carrito.find(i => i.id == producto.id);
         if (exist) {
@@ -577,8 +803,6 @@ if ($cat_id) {
             carrito.push({ ...producto, cant: cantidad });
         }
         guardar();
-        // Feedback visual (Toast o Alert)
-        // alert("Agregado al carrito"); 
     }
 
     function eliminar(i) {
@@ -634,7 +858,6 @@ if ($cat_id) {
 
         if(!confirm(`¿Estás seguro de generar esta ${tipo}?`)) return;
 
-        // Feedback de carga en el botón
         const btn = event.target;
         const txtOriginal = btn.innerHTML;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
