@@ -1,10 +1,8 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - CATÁLOGO PRINCIPAL (VERSIÓN OPTIMIZADA)
+ * PRUEBA_API.PHP - V5 FINAL (DISEÑO ESTABLE + LÓGICA M2)
  * ==============================================================================
- * Descripción: Conecta con la API de Dolibarr, lista categorías y productos,
- * y gestiona el carrito de compras mediante JavaScript.
  */
 
 require_once 'config.php'; 
@@ -13,24 +11,17 @@ require_once 'config.php';
 $api_url = DOL_BASE_URL; 
 $api_key = DOL_API_KEY;
 
-/**
- * Función genérica para llamar a la API
- * @param string $url Endpoint completo
- * @param string $api_key Clave de seguridad
- * @return array Datos en formato Array o Array vacío si falla
- */
 function callAPI($url, $api_key) {
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"),
-        CURLOPT_TIMEOUT => 10 // Timeout para evitar que la página se cuelgue
+        CURLOPT_TIMEOUT => 10
     ));
     $response = curl_exec($curl);
     
     if(curl_errno($curl)) {
-        // En producción, aquí podrías guardar el error en un log
         curl_close($curl);
         return []; 
     }
@@ -39,13 +30,11 @@ function callAPI($url, $api_key) {
     return json_decode($response, true);
 }
 
-// 1. OBTENER CATEGORÍAS (Para el menú de filtros)
+// 1. OBTENER CATEGORÍAS
 $lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
-
-// 2. DETECTAR FILTRO ACTIVO
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 
-// 3. DEFINIR TÍTULO DINÁMICO
+// 2. TÍTULO DINÁMICO
 $titulo_pagina = "Nuestra Colección";
 if ($cat_id && is_array($lista_categorias)) {
     foreach($lista_categorias as $c) {
@@ -56,10 +45,9 @@ if ($cat_id && is_array($lista_categorias)) {
     }
 }
 
-// 4. OBTENER PRODUCTOS (Solo si hay categoría seleccionada)
+// 3. OBTENER PRODUCTOS
 $productos = [];
 if ($cat_id) {
-    // Nota: 't.ref' ordena por referencia. Cambiar a 'label' si prefieres alfabético.
     $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id;
     $productos = callAPI($api_url . $endpoint, $api_key);
 }
@@ -84,8 +72,8 @@ if ($cat_id) {
     <div class="container">
         <a class="navbar-brand" href="index.php">
              <div class="d-flex align-items-center">
-               <img src="/img/logo.png" width="50" height="50">
-                <span class="fw-bold fs-3" style="color: var(--montes-cyan, #00b4db);">CARPAS</span>
+               <img src="img/logo.png" width="50" height="50" alt="Logo" onerror="this.style.display='none'">
+                <span class="fw-bold fs-3 ms-2" style="color: var(--montes-cyan, #00b4db);">CARPAS</span>
                 <span class="fw-bold fs-3 ms-1" style="color: var(--montes-dark, #0e4c81);">MONTES</span>
             </div>
         </a>
@@ -148,10 +136,10 @@ if ($cat_id) {
             </div>
 
             <div class="carousel-inner">
-                
-                <div class="carousel-item active" style="height: 450px;"> <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Evento Grande"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Gran+Evento'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                <div class="carousel-item active" style="height: 450px;"> 
+                    <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Evento Grande"
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Eventos'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Eventos Inolvidables</h2>
                         <p class="fs-5 text-white">Todo lo necesario para tu celebración.</p>
                     </div>
@@ -159,49 +147,42 @@ if ($cat_id) {
 
                 <div class="carousel-item" style="height: 450px;">
                     <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Iluminación"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Iluminación'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Iluminacion'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Ambiente Mágico</h2>
-                        <p class="fs-5 text-white">Iluminación que transforma espacios.</p>
                     </div>
                 </div>
 
                 <div class="carousel-item" style="height: 450px;">
                     <img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpas Hule"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Montaje+Profesional'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Montaje'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Protección Total</h2>
-                        <p class="fs-5 text-white">Estructuras resistentes para cualquier clima.</p>
                     </div>
                 </div>
 
                 <div class="carousel-item" style="height: 450px;">
                     <img src="carrusel/arcoiris.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Arcoiris"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Diseño+Creativo'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Diseño'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Diseños Únicos</h2>
-                        <p class="fs-5 text-white">Color y estilo para destacar tu evento.</p>
                     </div>
                 </div>
 
                 <div class="carousel-item" style="height: 450px;">
                     <img src="carrusel/carpa.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpa Standard"
-                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Calidad+Montes'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
+                         onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Calidad'">
+                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Calidad Garantizada</h2>
-                        <p class="fs-5 text-white">Comodidad y elegancia para tus invitados.</p>
                     </div>
                 </div>
-
             </div>
 
             <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev">
                 <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                <span class="visually-hidden">Anterior</span>
             </button>
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next">
                 <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                <span class="visually-hidden">Siguiente</span>
             </button>
         </div>
 
@@ -256,10 +237,7 @@ if ($cat_id) {
                         </div>
                     </a>
                 </div>
-            <?php
-                }
-            }
-            ?>
+            <?php } } ?>
         </div>
     
     <?php else: ?>
@@ -274,20 +252,16 @@ if ($cat_id) {
                 echo "<div class='col-12 text-center py-5'><i class='bi bi-box-seam display-1 text-muted'></i><p class='mt-3 lead'>No hay productos disponibles.</p></div>";
             } else {
                 foreach ($productos as $producto) {
-                    // Mapeo de datos seguro
                     $id = $producto['id'];
                     $ref = $producto['ref'];
                     $label = addslashes($producto['label']); 
                     $price = (float)$producto['price']; 
                     $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
-                    
-                    // Lógica de Imagen
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
             ?>
                 <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-aos="zoom-in">
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
-                        
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
                              onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>)">
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" 
@@ -296,11 +270,9 @@ if ($cat_id) {
                                 $<?php echo number_format($price, 2); ?>
                             </span>
                         </div>
-
                         <div class="p-3 d-flex flex-column flex-grow-1">
                             <h6 class="fw-bold text-dark mb-1 text-truncate" style="font-family: 'Lato', sans-serif;"><?php echo $label; ?></h6>
                             <small class="text-muted mb-3 small product-desc-clamp"><?php echo strip_tags($desc); ?></small>
-                            
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
@@ -312,13 +284,9 @@ if ($cat_id) {
                                 </button>
                             </div>
                         </div>
-
                     </div>
                 </div>
-            <?php 
-                } 
-            } 
-            ?>
+            <?php } } ?>
         </div>
     <?php endif; ?>
 </div>
@@ -395,20 +363,16 @@ if ($cat_id) {
                                         </button>
                                     </li>
                                 </ul>
-
                                 <div class="tab-content flex-grow-1 d-flex flex-column" id="pills-tabContent">
-                                    
                                     <div class="tab-pane fade show active h-100" id="pills-foto" role="tabpanel">
                                         <div class="main-image-container mb-2" style="height: 350px;"> <img id="imgPrincipal" src="" alt="Producto" class="w-100 h-100 object-fit-contain rounded-3">
                                         </div>
                                         <div class="thumbnails-row" id="galeriaContenedor"></div>
                                     </div>
-
                                     <div class="tab-pane fade h-100" id="pills-plano" role="tabpanel">
                                         <div class="card border-0 shadow-sm h-100">
                                             <div class="card-body p-0 position-relative bg-white rounded-3 d-flex align-items-center justify-content-center overflow-hidden">
                                                 <canvas id="canvasPlano" width="500" height="400"></canvas>
-                                                
                                                 <div class="position-absolute top-0 end-0 m-3 badge bg-dark shadow">
                                                     <i class="bi bi-arrows-fullscreen"></i> Área Total: <span id="lblAreaTotal">0</span> m²
                                                 </div>
@@ -431,12 +395,10 @@ if ($cat_id) {
                                 <p class="text-muted small lh-lg" id="detalleDesc"></p>
                             </div>
                             <div class="mt-auto pt-3 border-top">
-    
                                 <div id="panelMedidas" class="mb-3 p-3 bg-light rounded-3 border" style="display:none;">
                                     <label class="small fw-bold text-primary mb-2 d-block">
-                                        <i class="bi bi-rulers"></i> Configurar Medidas
+                                        <i class="bi bi-rulers"></i> Configurar Medidas (m²)
                                     </label>
-                                    
                                     <div class="row g-2 align-items-center">
                                         <div class="col-5">
                                             <div class="form-floating">
@@ -456,13 +418,11 @@ if ($cat_id) {
                                         <small class="text-muted">Capacidad aprox: <strong id="lblCapacidad" class="text-dark">50</strong> personas</small>
                                     </div>
                                 </div>
-
                                 <div class="d-flex gap-2">
                                     <div id="divCantidadNormal">
                                         <label class="small fw-bold mb-1">Cant:</label>
                                         <input type="number" id="inputCantidadDetalle" class="form-control text-center fw-bold" value="1" min="1" style="width: 70px;">
                                     </div>
-                                    
                                     <button class="btn btn-gold w-100 rounded-pill shadow-sm d-flex justify-content-center align-items-center flex-column" onclick="agregarDesdeDetalle()">
                                         <span><i class="bi bi-cart-plus me-1"></i> Agregar al Pedido</span>
                                         <small id="lblPrecioTotal" style="font-size: 0.7em; opacity: 0.9;"></small>
@@ -489,7 +449,6 @@ if ($cat_id) {
                     <input type="text" id="cliente" class="form-control form-control-sm mb-2" placeholder="Nombre Completo *">
                     <input type="email" id="email" class="form-control form-control-sm mb-2" placeholder="Email *">
                     <input type="date" id="fecha" class="form-control form-control-sm mb-2">
-                    
                     <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Datos Entrega/RFC</a>
                     <div class="collapse mt-2" id="extraFields">
                         <input type="tel" id="telefono" class="form-control form-control-sm mb-2" placeholder="Teléfono">
@@ -526,19 +485,17 @@ if ($cat_id) {
     
     // Variables Globales del Estado
     let carrito = JSON.parse(localStorage.getItem('carrito_v2')) || [];
-    let tempProducto = null; // Para guardar temporalmente al dar clic en '+'
-    let currentProductoData = {}; // Para el modal de detalles
+    let tempProducto = null; 
+    let currentProductoData = {}; 
     
     // Variables para Carpas Modulares
     let esCarpaModular = false;
     let anchoFijo = 0;
     
-    // Instancias de Modales Bootstrap
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
     const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
     const modalCarritoBootstrap = new bootstrap.Modal(document.getElementById('modalCarrito'));
 
-    // Render inicial
     renderizar();
 
     // --- LÓGICA DE BÚSQUEDA ---
@@ -553,49 +510,42 @@ if ($cat_id) {
         });
     }
 
-    // --- FUNCIÓN PRINCIPAL: VER DETALLES (UNIFICADA) ---
+    // --- FUNCIÓN PRINCIPAL: VER DETALLES ---
     async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
-        // Guardar estado actual
         currentProductoId = id;
         currentProductoNombre = nombre;
         currentProductoPrecio = precio;
 
-        // UI Reset Básica
         document.getElementById('detalleTitulo').innerText = nombre;
         document.getElementById('detalleDesc').innerHTML = desc || '<em class="text-muted">Sin descripción.</em>';
         document.getElementById('inputCantidadDetalle').value = 1;
         
-        // Imagen Principal
         const imgPrincipal = document.getElementById('imgPrincipal');
         imgPrincipal.src = imgMain;
         
-        // 1. LÓGICA DE DETECCIÓN INTELIGENTE (CARPAS)
-            // Ahora detecta "ancho", "carpa" o "toldo"
-            if (nombre.toLowerCase().includes("ancho") || nombre.toLowerCase().includes("carpa") || nombre.toLowerCase().includes("toldo")) {
-                        esCarpaModular = true;
+        // 1. DETECCIÓN INTELIGENTE (Carpas/Toldos/Ancho)
+        if (nombre.toLowerCase().includes("ancho") || nombre.toLowerCase().includes("carpa") || nombre.toLowerCase().includes("toldo")) {
+            esCarpaModular = true;
             
-            // Extraer número del ancho (ej: "10")
             const match = nombre.match(/(\d+)/);
             anchoFijo = match ? parseInt(match[0]) : 10; 
             
-            // Configurar UI para Carpas
             document.getElementById('panelMedidas').style.display = 'block';
             document.getElementById('divCantidadNormal').style.display = 'none'; 
             document.getElementById('pills-plano-tab').style.display = 'block'; 
             
-            // Valores iniciales
             document.getElementById('inputAncho').value = anchoFijo;
             document.getElementById('inputLargo').value = 5; 
-            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / metro lineal";
+            
+            // CAMBIO 1: Mostrar precio por m²
+            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
             document.getElementById('lblPrecioTotal').innerText = ""; 
 
-            actualizarCalculosRender(); // Dibujar plano inicial
+            actualizarCalculosRender(); 
 
         } else {
-            // PRODUCTO NORMAL
             esCarpaModular = false;
             
-            // Configurar UI Normal
             document.getElementById('panelMedidas').style.display = 'none';
             document.getElementById('divCantidadNormal').style.display = 'block';
             document.getElementById('pills-plano-tab').style.display = 'none'; 
@@ -603,16 +553,13 @@ if ($cat_id) {
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
             document.getElementById('lblPrecioTotal').innerText = "";
             
-            // Forzar pestaña de fotos
             const tabBtn = document.querySelector('#pills-foto-tab');
             const tab = new bootstrap.Tab(tabBtn);
             tab.show();
         }
 
-        // Mostrar Modal
         modalDetallesBootstrap.show();
 
-        // 2. CARGAR GALERÍA DE FOTOS EXTRA
         const contenedor = document.getElementById('galeriaContenedor');
         contenedor.innerHTML = '<div class="spinner-border spinner-border-sm text-warning mx-auto"></div>';
 
@@ -635,7 +582,7 @@ if ($cat_id) {
         }
     }
 
-    // --- FUNCIONES DEL SIMULADOR (RENDER) ---
+    // --- FUNCIONES DEL SIMULADOR ---
     function iniciarRender() {
         requestAnimationFrame(dibujarPlano);
     }
@@ -645,14 +592,14 @@ if ($cat_id) {
 
         const largo = parseInt(document.getElementById('inputLargo').value) || 0;
         const ancho = anchoFijo;
-        const area = largo * ancho;
-        const precioMetro = currentProductoPrecio;
+        const area = largo * ancho; // Área en m²
+        const precioM2 = currentProductoPrecio; // Precio es por m²
         
-        // Calcular Totales
-        const total = precioMetro * largo;
+        // CAMBIO 2: Calcular Total multiplicando Precio x Área
+        const total = precioM2 * area;
+        
         document.getElementById('lblPrecioTotal').innerText = `Total: $${total.toLocaleString('es-MX', {minimumFractionDigits: 2})}`;
         
-        // Calcular Capacidad
         const capacidad = Math.floor(area / 1.5); 
         document.getElementById('lblCapacidad').innerText = `${capacidad} - ${Math.floor(area/1)} personas`;
         document.getElementById('lblAreaTotal').innerText = area;
@@ -662,15 +609,13 @@ if ($cat_id) {
 
     function dibujarPlano() {
         const canvas = document.getElementById('canvasPlano');
-        if (!canvas) return; // Seguridad
+        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const largo = parseInt(document.getElementById('inputLargo').value) || 5;
         const ancho = anchoFijo;
 
-        // Limpiar
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Escala
         const padding = 40;
         const maxW = canvas.width - (padding * 2);
         const maxH = canvas.height - (padding * 2);
@@ -689,11 +634,10 @@ if ($cat_id) {
         ctx.beginPath();
         ctx.strokeStyle = "#e0e0e0";
         ctx.lineWidth = 1;
-        for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * escala), startY, 0, rectH); // Verticales (truco visual)
-        for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * escala), rectW, 0); // Horizontales
-        // Nota: El loop anterior dibuja lineas usando rects vacíos, es válido. O usar moveTo/lineTo.
+        for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * escala), startY, 0, rectH); 
+        for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * escala), rectW, 0); 
         
-        // Contorno Carpa
+        // Contorno
         ctx.strokeStyle = "#0e4c81";
         ctx.lineWidth = 3;
         ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
@@ -711,21 +655,8 @@ if ($cat_id) {
         ctx.rotate(-Math.PI / 2);
         ctx.fillText(`${largo}m`, 0, 0);
         ctx.restore();
-
-        // Mesas (Decoración)
-        if (escala > 15) {
-            ctx.fillStyle = "rgba(212, 175, 55, 0.3)";
-            for (let x = 0.5; x < ancho; x += 2) {
-                for (let y = 0.5; y < largo; y += 2) {
-                    ctx.beginPath();
-                    ctx.arc(startX + (x * escala), startY + (y * escala), escala * 0.4, 0, 2 * Math.PI);
-                    ctx.fill();
-                }
-            }
-        }
     }
 
-    // --- INTERACCIÓN UI ---
     function cambiarImagen(src, elemento) {
         const main = document.getElementById('imgPrincipal');
         main.style.opacity = 0; 
@@ -738,8 +669,6 @@ if ($cat_id) {
     }
 
     // --- CARRITO ---
-    
-    // 1. Agregar desde el botón rápido (+)
     function prepararAgregar(id, nombre, precio) {
         tempProducto = { id, nombre, precio };
         document.getElementById('lblProductoSeleccionado').innerText = nombre;
@@ -754,24 +683,23 @@ if ($cat_id) {
         modalCantidadBootstrap.hide();
     }
 
-    // 2. Agregar desde el Modal Detalles (UNIFICADA)
     function agregarDesdeDetalle() {
         let itemParaCarrito = {};
 
         if (esCarpaModular) {
-            // Lógica Modular
+            // CAMBIO 3: Lógica Modular por m²
             const largo = parseInt(document.getElementById('inputLargo').value);
             const ancho = anchoFijo;
+            const area = largo * ancho;
             
             itemParaCarrito = {
                 id: currentProductoId,
-                nombre: `${currentProductoNombre} (Medida: ${ancho}x${largo}m)`, 
+                nombre: `${currentProductoNombre} (Medida: ${ancho}x${largo}m - ${area}m²)`, 
                 precio: currentProductoPrecio, 
-                cant: largo, 
+                cant: area, // Cantidad es ÁREA (m²)
                 esModular: true
             };
         } else {
-            // Lógica Normal
             const cant = parseInt(document.getElementById('inputCantidadDetalle').value);
             itemParaCarrito = {
                 id: currentProductoId,
@@ -781,7 +709,6 @@ if ($cat_id) {
             };
         }
 
-        // Agregar al array
         let exist = carrito.find(i => i.nombre === itemParaCarrito.nombre);
         if (exist) {
             exist.cant += itemParaCarrito.cant;
@@ -791,7 +718,6 @@ if ($cat_id) {
         
         guardar();
         modalDetallesBootstrap.hide();
-        // Feedback
         alert("Agregado al pedido correctamente");
     }
 
@@ -831,11 +757,14 @@ if ($cat_id) {
         
         carrito.forEach((item, index) => {
             total += item.precio * item.cant;
+            // CAMBIO 4: Mostrar unidad correcta (m² o ud)
+            let unidad = item.esModular ? "m²" : "";
+            
             lista.innerHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                     <div class="small lh-1">
                         <span class="fw-bold text-dark">${item.nombre}</span><br>
-                        <span class="text-muted" style="font-size:0.85rem">$${item.precio.toFixed(2)} x ${item.cant}</span>
+                        <span class="text-muted" style="font-size:0.85rem">$${item.precio.toFixed(2)} x ${item.cant} ${unidad}</span>
                     </div>
                     <i class="bi bi-x-circle text-danger cursor-pointer" onclick="eliminar(${index})" title="Eliminar"></i>
                 </li>`;
@@ -845,7 +774,6 @@ if ($cat_id) {
         document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
     }
 
-    // --- PROCESAR PEDIDO ---
     async function enviarPedido(tipo) {
         const c = document.getElementById('cliente').value;
         const e = document.getElementById('email').value;
