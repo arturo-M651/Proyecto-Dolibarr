@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Carpas Montes | Eventos Exclusivos</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -10,6 +10,22 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="estilos.css">
+
+    <style>
+        /* En pantallas pequeñas, reducimos el tamaño de las fuentes gigantes */
+        @media (max-width: 768px) {
+            .display-1 { font-size: 2.5rem !important; }
+            .display-4 { font-size: 2rem !important; }
+            .display-5 { font-size: 1.8rem !important; }
+            .lead { font-size: 1rem !important; }
+            /* Separación entre botones en el hero */
+            .hero-section .d-flex { gap: 10px !important; flex-direction: column; width: 100%; }
+            .hero-section .btn { width: 100%; }
+        }
+        /* Evitar desbordamiento horizontal */
+        body { overflow-x: hidden; }
+        img { max-width: 100%; height: auto; }
+    </style>
 </head>
 <body>
 
@@ -17,7 +33,7 @@
         <div class="container">
             <a class="navbar-brand" href="index.php">
                 <div class="d-flex align-items-center">
-                    <img src="/img/logo.png" width="50" height="50">
+                    <img src="/img/logo.png" width="50" height="50" alt="Logo">
                     <span class="fw-bold fs-3" style="color: var(--montes-cyan, #00b4db);">CARPAS</span>
                     <span class="fw-bold fs-3 ms-1" style="color: var(--montes-dark, #0e4c81);">MONTES</span>
                 </div>
@@ -28,13 +44,13 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center gap-2">
-                    <li class="nav-item"><a class="nav-link active" href="index.php">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#servicios">Experiencia</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#galeria">Galería</a></li>
-                    <li class="nav-item"><a class="nav-link" href="confecciones.php">Confección</a></li>
-                    <li class="nav-item ms-lg-2">
-                        <a class="btn btn-gold shadow-sm" href="prueba_api.php">Ver Catálogo</a>
+                <ul class="navbar-nav ms-auto align-items-center gap-2 bg-white bg-lg-transparent p-3 p-lg-0 rounded mt-2 mt-lg-0 shadow-sm shadow-lg-none">
+                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link active" href="index.php">Inicio</a></li>
+                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="#servicios">Experiencia</a></li>
+                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="#galeria">Galería</a></li>
+                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="confecciones.php">Confección</a></li>
+                    <li class="nav-item ms-lg-2 w-100">
+                        <a class="btn btn-gold shadow-sm w-100" href="prueba_api.php">Ver Catálogo</a>
                     </li>
                 </ul>
             </div>
@@ -58,16 +74,16 @@
 
     <section class="py-5 text-white" style="background-color: var(--navy-dark, #000000);">
         <div class="container">
-            <div class="row text-center">
-                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="row text-center g-4">
+                <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <h2 class="display-4 fw-bold" style="color: var(--gold);">25+</h2>
                     <p class="text-uppercase ls-2">Años de Experiencia</p>
                 </div>
-                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="200">
                     <h2 class="display-4 fw-bold" style="color: var(--gold);">5000+</h2>
                     <p class="text-uppercase ls-2">Eventos Exitosos</p>
                 </div>
-                <div class="col-md-4 mb-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="300">
                     <h2 class="display-4 fw-bold" style="color: var(--gold);">100%</h2>
                     <p class="text-uppercase ls-2">Clientes Satisfechos</p>
                 </div>
@@ -84,21 +100,21 @@
             </div>
             
             <div class="row g-4">
-                <div class="col-md-4" data-aos="flip-left">
+                <div class="col-12 col-md-4" data-aos="flip-left">
                     <div class="service-card shadow-sm text-center bg-white h-100 p-4 rounded-4">
                         <div class="fs-1 text-warning mb-3"><i class="bi bi-gem"></i></div>
                         <h4 class="mb-3 fw-bold">Calidad Premium</h4>
                         <p class="text-muted">Mobiliario de alta gama, limpio y en perfectas condiciones estéticas para tu celebración.</p>
                     </div>
                 </div>
-                <div class="col-md-4" data-aos="flip-left" data-aos-delay="200">
+                <div class="col-12 col-md-4" data-aos="flip-left" data-aos-delay="200">
                     <div class="service-card shadow-sm text-center bg-white h-100 p-4 rounded-4">
                         <div class="fs-1 text-warning mb-3"><i class="bi bi-alarm"></i></div>
                         <h4 class="mb-3 fw-bold">Puntualidad Absoluta</h4>
                         <p class="text-muted">Entendemos la importancia del tiempo. Tu montaje estará listo mucho antes de que llegue el primer invitado.</p>
                     </div>
                 </div>
-                <div class="col-md-4" data-aos="flip-left" data-aos-delay="400">
+                <div class="col-12 col-md-4" data-aos="flip-left" data-aos-delay="400">
                     <div class="service-card shadow-sm text-center bg-white h-100 p-4 rounded-4">
                         <div class="fs-1 text-warning mb-3"><i class="bi bi-truck"></i></div>
                         <h4 class="mb-3 fw-bold">Logística Integral</h4>
@@ -117,32 +133,32 @@
             </div>
             
             <div class="row text-center g-4">
-                <div class="col-md-3" data-aos="fade-right" data-aos-delay="100">
-                    <div class="position-relative p-4">
+                <div class="col-6 col-md-3" data-aos="fade-right" data-aos-delay="100">
+                    <div class="position-relative p-2 p-md-4">
                         <div class="display-4 text-warning mb-3"><i class="bi bi-laptop"></i></div>
-                        <h4 class="fw-bold">1. Cotiza</h4>
-                        <p class="text-muted small">Explora nuestro catálogo en línea y agrega lo que necesitas al carrito.</p>
+                        <h4 class="fw-bold h5">1. Cotiza</h4>
+                        <p class="text-muted small">Explora nuestro catálogo en línea.</p>
                     </div>
                 </div>
-                <div class="col-md-3" data-aos="fade-right" data-aos-delay="200">
-                    <div class="position-relative p-4">
+                <div class="col-6 col-md-3" data-aos="fade-right" data-aos-delay="200">
+                    <div class="position-relative p-2 p-md-4">
                         <div class="display-4 text-warning mb-3"><i class="bi bi-file-earmark-text"></i></div>
-                        <h4 class="fw-bold">2. Confirma</h4>
-                        <p class="text-muted small">Llena tus datos. Recibirás un PDF y una confirmación rápida.</p>
+                        <h4 class="fw-bold h5">2. Confirma</h4>
+                        <p class="text-muted small">Llena tus datos. Recibirás un PDF.</p>
                     </div>
                 </div>
-                <div class="col-md-3" data-aos="fade-right" data-aos-delay="300">
-                    <div class="position-relative p-4">
+                <div class="col-6 col-md-3" data-aos="fade-right" data-aos-delay="300">
+                    <div class="position-relative p-2 p-md-4">
                         <div class="display-4 text-warning mb-3"><i class="bi bi-calendar-check"></i></div>
-                        <h4 class="fw-bold">3. Recibe</h4>
-                        <p class="text-muted small">Nuestro equipo entrega y monta todo en tu domicilio puntualmente.</p>
+                        <h4 class="fw-bold h5">3. Recibe</h4>
+                        <p class="text-muted small">Entrega y montaje puntual.</p>
                     </div>
                 </div>
-                <div class="col-md-3" data-aos="fade-right" data-aos-delay="400">
-                    <div class="position-relative p-4">
+                <div class="col-6 col-md-3" data-aos="fade-right" data-aos-delay="400">
+                    <div class="position-relative p-2 p-md-4">
                         <div class="display-4 text-warning mb-3"><i class="bi bi-emoji-laughing"></i></div>
-                        <h4 class="fw-bold">4. Disfruta</h4>
-                        <p class="text-muted small">Celebra sin preocupaciones. Nosotros pasamos a recoger todo al final.</p>
+                        <h4 class="fw-bold h5">4. Disfruta</h4>
+                        <p class="text-muted small">Celebra sin preocupaciones.</p>
                     </div>
                 </div>
             </div>
@@ -159,7 +175,7 @@
             </div>
 
             <div class="row g-4">
-                <div class="col-md-4" data-aos="flip-up" data-aos-delay="100">
+                <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="100">
                     <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4 rounded-4">
                         <div class="card-body">
                             <div class="mb-3 text-warning small">
@@ -177,7 +193,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4" data-aos="flip-up" data-aos-delay="200">
+                <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="200">
                     <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4 rounded-4">
                         <div class="card-body">
                             <div class="mb-3 text-warning small">
@@ -195,7 +211,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4" data-aos="flip-up" data-aos-delay="300">
+                <div class="col-12 col-md-4" data-aos="flip-up" data-aos-delay="300">
                     <div class="card bg-secondary bg-opacity-25 border-0 h-100 text-white p-4 rounded-4">
                         <div class="card-body">
                             <div class="mb-3 text-warning small">
@@ -224,8 +240,8 @@
                 No solo rentamos, también creamos. Diseñamos lonas, carpas industriales, 
                 malla sombra y cubiertas a la medida exacta de tus necesidades.
             </p>
-            <div class="d-flex justify-content-center gap-3">
-                <a href="confecciones.php" class="btn btn-gold shadow-lg rounded-pill px-4">
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="confecciones.php" class="btn btn-gold shadow-lg rounded-pill px-4 mb-2 mb-md-0">
                     <i class="bi bi-scissors me-2"></i> Ver Soluciones
                 </a>
                 <a href="https://wa.me/525500000000?text=Hola,%20me%20interesa%20una%20cotización%20de%20confección" class="btn btn-outline-light rounded-pill px-4">
@@ -303,13 +319,13 @@
     <footer class="bg-dark text-white pt-5 pb-3">
         <div class="container">
             <div class="row">
-                <div class="col-md-4 mb-4">
+                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
                     <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
                     <p class="text-white-50 small">
                         Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
                     </p>
                 </div>
-                <div class="col-md-4 mb-4">
+                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
                     <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
                     <ul class="list-unstyled text-white-50 small">
                         <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
@@ -317,7 +333,7 @@
                         <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
                     </ul>
                 </div>
-                <div class="col-md-4 mb-4 text-center">
+                <div class="col-12 col-md-4 mb-4 text-center">
                     <a href="prueba_api.php" class="btn btn-gold w-100 py-3 rounded-pill fw-bold">IR AL CATÁLOGO</a>
                 </div>
             </div>
@@ -335,14 +351,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Inicializar animaciones de scroll
-        AOS.init({
-            once: true, 
-            offset: 80,
-            duration: 800
-        });
-
-        // Efecto sombra Navbar al bajar
+        AOS.init({ once: true, offset: 80, duration: 800 });
         window.addEventListener('scroll', function() {
             if (window.scrollY > 50) {
                 document.querySelector('.navbar').classList.add('shadow-sm');

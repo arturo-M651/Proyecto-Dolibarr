@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V15 (FINAL: BOTÓN INTELIGENTE + SIMULADOR HÍBRIDO)
+ * PRUEBA_API.PHP - V17 (OPTIMIZADO MÓVIL + FUNCIONES V15 INTACTAS)
  * ==============================================================================
  */
 
@@ -46,7 +46,7 @@ if ($cat_id) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Catálogo | Carpas Montes</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -56,6 +56,29 @@ if ($cat_id) {
     <link rel="stylesheet" href="estilos.css">
     
     <style>
+        /* CSS ESPECIAL PARA MÓVIL (Sin tocar el de escritorio) */
+        
+        /* Ajuste de altura del carrusel en móvil */
+        .carousel-item-responsive { height: 450px; transition: height 0.3s ease; }
+        @media (max-width: 768px) {
+            .carousel-item-responsive { height: 280px !important; }
+            .display-5 { font-size: 1.8rem; }
+            .navbar-brand img { width: 40px; height: 40px; }
+            .navbar-brand span { font-size: 1.2rem !important; }
+        }
+
+        /* Filtros con scroll horizontal en móvil (tipo App) */
+        .filters-scroll-mobile {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+            gap: 0.5rem;
+        }
+        .filters-scroll-mobile::-webkit-scrollbar { display: none; } /* Ocultar barra scroll */
+
+        /* Simulador 3D */
         #contenedorCanvas {
             position: relative;
             width: 100%;
@@ -113,8 +136,8 @@ if ($cat_id) {
             </div>
         </a>
 
-        <div class="ms-auto d-flex align-items-center gap-3">
-            <a href="index.php" class="text-decoration-none fw-bold text-dark small d-none d-md-block">
+        <div class="d-flex align-items-center gap-3">
+            <a href="index.php" class="text-decoration-none fw-bold text-dark small d-none d-lg-block">
                 <i class="bi bi-house-door"></i> INICIO
             </a>
             <button class="btn btn-gold rounded-circle d-flex align-items-center justify-content-center shadow-sm position-relative" 
@@ -129,8 +152,8 @@ if ($cat_id) {
 <div class="sticky-filters shadow-sm">
     <div class="container">
         <div class="row align-items-center g-2">
-            <div class="col-md-8">
-                <div class="d-flex align-items-center gap-2 overflow-auto" style="white-space: nowrap; padding-bottom: 10px;">
+            <div class="col-12 col-md-8">
+                <div class="filters-scroll-mobile">
                     <a href="prueba_api.php" class="cat-pill <?php echo ($cat_id == '') ? 'active' : ''; ?>">
                         <i class="bi bi-grid-fill me-1"></i> Todo
                     </a>
@@ -144,7 +167,7 @@ if ($cat_id) {
                     ?>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-md-4">
                 <?php if ($cat_id): ?>
                 <div class="search-container d-flex align-items-center bg-white px-3 py-1 rounded-pill border shadow-sm">
                     <i class="bi bi-search text-muted small"></i>
@@ -167,43 +190,20 @@ if ($cat_id) {
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="2"></button>
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="3"></button>
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="4"></button>
+                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="5"></button>
             </div>
             <div class="carousel-inner">
-                <div class="carousel-item active" style="height: 450px;">
-                    <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Evento Grande" onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Gran+Evento'">
+                <div class="carousel-item active carousel-item-responsive">
+                    <img src="carrusel/15x30.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Evento" onerror="this.src='https://placehold.co/800x600/0e4c81/ffffff?text=Evento'">
                     <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
                         <h2 class="display-5 fw-bold text-warning">Eventos Inolvidables</h2>
-                        <p class="fs-5 text-white">Todo lo necesario para tu celebración.</p>
                     </div>
                 </div>
-                <div class="carousel-item" style="height: 450px;">
-                    <img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Iluminación" onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Iluminación'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
-                        <h2 class="display-5 fw-bold text-warning">Ambiente Mágico</h2>
-                        <p class="fs-5 text-white">Iluminación que transforma espacios.</p>
-                    </div>
-                </div>
-                <div class="carousel-item" style="height: 450px;">
-                    <img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpas Hule" onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Montaje+Profesional'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
-                        <h2 class="display-5 fw-bold text-warning">Protección Total</h2>
-                        <p class="fs-5 text-white">Estructuras resistentes para cualquier clima.</p>
-                    </div>
-                </div>
-                <div class="carousel-item" style="height: 450px;">
-                    <img src="carrusel/arcoiris.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Arcoiris" onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Diseño+Creativo'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
-                        <h2 class="display-5 fw-bold text-warning">Diseños Únicos</h2>
-                        <p class="fs-5 text-white">Color y estilo para destacar tu evento.</p>
-                    </div>
-                </div>
-                <div class="carousel-item" style="height: 450px;">
-                    <img src="carrusel/carpa.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpa Standard" onerror="this.src='https://placehold.co/1920x600/0e4c81/ffffff?text=Calidad+Montes'">
-                    <div class="carousel-caption d-none d-md-block p-4 rounded-3" style="background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);">
-                        <h2 class="display-5 fw-bold text-warning">Calidad Garantizada</h2>
-                        <p class="fs-5 text-white">Comodidad y elegancia para tus invitados.</p>
-                    </div>
-                </div>
+                <div class="carousel-item carousel-item-responsive"><img src="carrusel/Carpa_Luces.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Luces"></div>
+                <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpa"></div>
+                <div class="carousel-item carousel-item-responsive"><img src="carrusel/arcoiris.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Decoración"></div>
+                <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Calidad"></div>
+                <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa-f.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Magico"></div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
@@ -252,7 +252,7 @@ if ($cat_id) {
                 foreach ($lista_categorias as $cat) {
                     $img_cat = "img_categorias/" . $cat['id'] . ".jpg";
             ?>
-                <div class="col-md-6 col-lg-4" data-aos="fade-up">
+                <div class="col-6 col-md-4" data-aos="fade-up">
                     <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none">
                         <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>" class="transition-hover"
                              onerror="this.onerror=null; this.src='https://placehold.co/600x400/0e4c81/ffffff?text=<?php echo urlencode($cat['label']); ?>';">
@@ -352,7 +352,7 @@ if ($cat_id) {
         </div>
         <hr class="border-secondary">
         <div class="text-center text-secondary small">
-            &copy; 2026 Carpas Montes. Todos los derechos reservados.
+            © 2026 Carpas Montes. Todos los derechos reservados.
         </div>
     </div>
 </footer>
@@ -514,10 +514,16 @@ if ($cat_id) {
     let currentProductoId = null;
     let currentProductoNombre = "";
     let currentProductoPrecio = 0;
+    
     let esCarpaModular = false;
     let anchoFijo = 0;
     
-    let viewState = { mode: '2d', scale: 20, offsetX: 0, offsetY: 0, isDragging: false, lastX: 0, lastY: 0 };
+    let viewState = {
+        mode: '2d', // '2d' o '3d'
+        scale: 20, 
+        offsetX: 0, offsetY: 0, 
+        isDragging: false, lastX: 0, lastY: 0
+    };
 
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
     const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
@@ -525,6 +531,7 @@ if ($cat_id) {
 
     renderizar();
 
+    // --- CANVAS EVENTS ---
     const canvas = document.getElementById('canvasPlano');
     const container = document.getElementById('contenedorCanvas');
 
@@ -537,7 +544,13 @@ if ($cat_id) {
         requestAnimationFrame(dibujarPlano);
     });
     window.addEventListener('mouseup', () => viewState.isDragging = false);
-    canvas.addEventListener('wheel', (e) => { e.preventDefault(); viewState.scale *= (e.deltaY > 0 ? 0.9 : 1.1); requestAnimationFrame(dibujarPlano); });
+    
+    canvas.addEventListener('wheel', (e) => { 
+        e.preventDefault(); 
+        viewState.scale *= (e.deltaY > 0 ? 0.9 : 1.1); 
+        requestAnimationFrame(dibujarPlano); 
+    });
+    
     canvas.addEventListener('touchstart', (e) => { if(e.touches.length === 1) { viewState.isDragging = true; viewState.lastX = e.touches[0].clientX; viewState.lastY = e.touches[0].clientY; } });
     canvas.addEventListener('touchmove', (e) => {
         if (!viewState.isDragging) return;
@@ -592,7 +605,10 @@ if ($cat_id) {
             document.getElementById('inputLargo').value = 5; 
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
             document.getElementById('lblPrecioTotal').innerText = ""; 
+            
+            // Default a 2D para comenzar (más claro)
             setMode('2d'); 
+
         } else {
             esCarpaModular = false;
             document.getElementById('panelMedidas').style.display = 'none';
@@ -630,11 +646,12 @@ if ($cat_id) {
         } catch (e) { contenedor.innerHTML = ''; }
     }
 
+    // --- CONTROLES DE VISTA ---
     function setMode(mode) {
         viewState.mode = mode;
         document.getElementById('btn2D').classList.toggle('active', mode === '2d');
         document.getElementById('btn3D').classList.toggle('active', mode === '3d');
-        autoFit();
+        autoFit(); // Reajustar cámara al cambiar
     }
 
     function iniciarRender() { requestAnimationFrame(dibujarPlano); }
@@ -663,33 +680,52 @@ if ($cat_id) {
         dibujarPlano();
     }
 
-    function dibujarPlano() { if (viewState.mode === '2d') { dibujar2D(); } else { dibujar3D(); } }
+    function dibujarPlano() {
+        if (viewState.mode === '2d') {
+            dibujar2D();
+        } else {
+            dibujar3D();
+        }
+    }
 
+    // --- RENDER 2D PLANO (TOP-DOWN) ---
     function dibujar2D() {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const largo = parseInt(document.getElementById('inputLargo').value) || 5;
         const ancho = anchoFijo;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Centro y Escala
         const cx = (canvas.width / 2) + viewState.offsetX;
         const cy = (canvas.height / 2) + viewState.offsetY;
         const scale = viewState.scale;
-        const rectW = ancho * scale; const rectH = largo * scale;
-        const startX = cx - (rectW / 2); const startY = cy - (rectH / 2);
-        
+
+        const rectW = ancho * scale;
+        const rectH = largo * scale;
+        const startX = cx - (rectW / 2);
+        const startY = cy - (rectH / 2);
+
+        // Grid Interno
         ctx.beginPath(); ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
         for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * scale), startY, 0, rectH); 
         for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * scale), rectW, 0);
         
-        ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2; ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
-        ctx.fillRect(startX, startY, rectW, rectH); ctx.strokeRect(startX, startY, rectW, rectH);
-        
+        // Contorno
+        ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2;
+        ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
+        ctx.fillRect(startX, startY, rectW, rectH);
+        ctx.strokeRect(startX, startY, rectW, rectH);
+
+        // Cotas
         ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
         ctx.fillText(`${ancho}m`, cx, startY - 10);
         ctx.save(); ctx.translate(startX - 15, cy); ctx.rotate(-Math.PI / 2);
         ctx.fillText(`${largo}m`, 0, 0); ctx.restore();
     }
 
+    // --- RENDER 3D ESTRUCTURAL (ISOMÉTRICO) ---
     function dibujar3D() {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
@@ -697,51 +733,82 @@ if ($cat_id) {
         const ancho = anchoFijo;
         const alturaPoste = 3.5;
         const alturaCumbrera = 1.5;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         const cx = (canvas.width / 2) + viewState.offsetX;
         const cy = (canvas.height * 0.6) + viewState.offsetY;
         const scale = viewState.scale;
-        function toIso(x, y, z) { return { x: cx + (x - y) * scale, y: cy + (x + y) * scale * 0.5 - (z * scale) }; }
-        
-        let numSecciones = Math.max(1, Math.round(largo / 5)); if (largo <= 5) numSecciones = 1; let paso = largo / numSecciones;
+
+        function toIso(x, y, z) {
+            return {
+                x: cx + (x - y) * scale,
+                y: cy + (x + y) * scale * 0.5 - (z * scale)
+            };
+        }
+
+        let numSecciones = Math.max(1, Math.round(largo / 5)); 
+        if (largo <= 5) numSecciones = 1;
+        let paso = largo / numSecciones;
+
         ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+
+        // Piso
         ctx.beginPath(); ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 1;
         let p0 = toIso(0,0,0); let p1 = toIso(ancho,0,0); let p2 = toIso(ancho,largo,0); let p3 = toIso(0,largo,0);
         ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath(); ctx.stroke();
 
+        // Estructura (Postes)
         for (let i = 0; i <= numSecciones; i++) {
             let yActual = i * paso;
             let baseIzq = toIso(0, yActual, 0); let topIzq = toIso(0, yActual, alturaPoste);
             let baseDer = toIso(ancho, yActual, 0); let topDer = toIso(ancho, yActual, alturaPoste);
             let cumbrera = toIso(ancho/2, yActual, alturaPoste + alturaCumbrera);
-            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath();
+
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+            ctx.beginPath();
             ctx.moveTo(baseIzq.x, baseIzq.y); ctx.lineTo(topIzq.x, topIzq.y);
             ctx.moveTo(baseDer.x, baseDer.y); ctx.lineTo(topDer.x, topDer.y);
             ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.lineTo(topDer.x, topDer.y);
-            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y); ctx.stroke();
-            ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.beginPath();
+            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
+            ctx.beginPath();
             let centroViga = toIso(ancho/2, yActual, alturaPoste);
-            ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.stroke();
+            ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); 
+            ctx.stroke();
         }
 
-        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.beginPath();
+        // Conexiones
+        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+        ctx.beginPath();
         let cumbInicio = toIso(ancho/2, 0, alturaPoste + alturaCumbrera);
         let cumbFin = toIso(ancho/2, largo, alturaPoste + alturaCumbrera);
         ctx.moveTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y);
+        
         let aleroIzqIni = toIso(0, 0, alturaPoste); let aleroIzqFin = toIso(0, largo, alturaPoste);
         ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y);
+        
         let aleroDerIni = toIso(ancho, 0, alturaPoste); let aleroDerFin = toIso(ancho, largo, alturaPoste);
-        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.stroke();
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y);
+        ctx.stroke();
 
-        ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; ctx.beginPath();
-        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill();
+        // Lona Semitransparente
+        ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; 
         ctx.beginPath();
-        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill();
+        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y);
+        ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y);
+        ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill();
 
+        // Cotas
         ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.lineWidth = 1;
         let ac1 = toIso(ancho, -1, 0); let ac2 = toIso(0, -1, 0);
         ctx.beginPath(); ctx.moveTo(ac1.x, ac1.y); ctx.lineTo(ac2.x, ac2.y); ctx.stroke();
         ctx.fillText(`${ancho}m`, (ac1.x+ac2.x)/2 - 10, (ac1.y+ac2.y)/2); 
+
         let lc1 = toIso(-1, 0, 0); let lc2 = toIso(-1, largo, 0);
         ctx.beginPath(); ctx.moveTo(lc1.x, lc1.y); ctx.lineTo(lc2.x, lc2.y); ctx.stroke();
         ctx.fillText(`${largo}m`, (lc1.x+lc2.x)/2 - 10, (lc1.y+lc2.y)/2);
