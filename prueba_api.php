@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V14 (DISEÑO ORIGINAL RESTAURADO + FUNCIONES 3D HÍBRIDAS)
+ * PRUEBA_API.PHP - V15 (FINAL: BOTÓN INTELIGENTE + SIMULADOR HÍBRIDO)
  * ==============================================================================
  */
 
@@ -209,33 +209,27 @@ if ($cat_id) {
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
         </div>
 
-        <div class="benefits-section mb-5" data-aos="fade-up">
-            <div class="row g-3 g-md-4">
-                <div class="col-12 col-md-4">
-                    <div class="benefit-card d-flex align-items-center p-3 h-100">
-                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-1">Puntualidad</h5>
-                            <p class="text-muted small mb-0">Montaje listo a tiempo.</p>
-                        </div>
+       <div class="container benefits-section mb-5" data-aos="fade-up">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-stopwatch"></i></div>
+                        <h4 class="fw-bold mb-2">Puntualidad Garantizada</h4>
+                        <p class="text-muted small">Tu montaje estará listo exactamente cuando lo necesitas.</p>
                     </div>
                 </div>
-                <div class="col-12 col-md-4">
-                    <div class="benefit-card d-flex align-items-center p-3 h-100">
-                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-1">Limpieza Total</h5>
-                            <p class="text-muted small mb-0">Mobiliario impecable.</p>
-                        </div>
+                <div class="col-md-4">
+                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-stars"></i></div>
+                        <h4 class="fw-bold mb-2">Impecable y Limpio</h4>
+                        <p class="text-muted small">Mobiliario mantenido y limpio antes de cada evento.</p>
                     </div>
                 </div>
-                <div class="col-12 col-md-4">
-                    <div class="benefit-card d-flex align-items-center p-3 h-100">
-                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div>
-                        <div>
-                            <h5 class="fw-bold mb-1">Seguridad</h5>
-                            <p class="text-muted small mb-0">Instalación profesional.</p>
-                        </div>
+                <div class="col-md-4">
+                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
+                        <div class="display-4 text-warning mb-3"><i class="bi bi-shield-check"></i></div>
+                        <h4 class="fw-bold mb-2">Seguridad y Confianza</h4>
+                        <p class="text-muted small">Instalación profesional por expertos.</p>
                     </div>
                 </div>
             </div>
@@ -286,6 +280,16 @@ if ($cat_id) {
                     $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
+
+                    // --- DETECCIÓN INTELIGENTE: ¿ES CARPA? ---
+                    $es_modular = false;
+                    $keywords = ['carpa', 'toldo', 'ancho', 'estructura'];
+                    foreach ($keywords as $kw) {
+                        if (stripos($label, $kw) !== false) {
+                            $es_modular = true;
+                            break;
+                        }
+                    }
             ?>
                 <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-aos="zoom-in">
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
@@ -298,8 +302,16 @@ if ($cat_id) {
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
                             <small class="text-muted mb-3 small product-desc-clamp"><?php echo strip_tags($desc); ?></small>
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
-                                <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)"><i class="bi bi-eye"></i> Ver</button>
-                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)"><i class="bi bi-plus-lg"></i></button>
+                                <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
+                                    onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver' : 'Ver'; ?>
+                                </button>
+                                
+                                <?php if (!$es_modular): ?>
+                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -857,9 +869,11 @@ if ($cat_id) {
             if (json.success) {
                 borrarTodo();
                 modalCarritoBootstrap.hide();
-                alert(`¡Éxito! Tu referencia es: ${json.ref}.`);
-                if (json.pdf_url) {
+                if(json.pdf_url) {
+                    // Abrir en nueva pestaña
                     window.open(json.pdf_url, '_blank');
+                } else {
+                    alert(`¡Éxito! Tu referencia es: ${json.ref}.`);
                 }
             } else { 
                 alert("Error: " + json.message); 
