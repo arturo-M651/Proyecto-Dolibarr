@@ -209,27 +209,33 @@ if ($cat_id) {
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
         </div>
 
-       <div class="container benefits-section mb-5" data-aos="fade-up">
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
-                        <div class="display-4 text-warning mb-3"><i class="bi bi-stopwatch"></i></div>
-                        <h4 class="fw-bold mb-2">Puntualidad Garantizada</h4>
-                        <p class="text-muted small">Tu montaje estará listo exactamente cuando lo necesitas.</p>
+      <div class="benefits-section mb-5" data-aos="fade-up">
+            <div class="row g-3 g-md-4">
+                <div class="col-12 col-md-4">
+                    <div class="benefit-card d-flex align-items-center p-3 h-100">
+                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Puntualidad</h5>
+                            <p class="text-muted small mb-0">Montaje listo a tiempo.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
-                        <div class="display-4 text-warning mb-3"><i class="bi bi-stars"></i></div>
-                        <h4 class="fw-bold mb-2">Impecable y Limpio</h4>
-                        <p class="text-muted small">Mobiliario mantenido y limpio antes de cada evento.</p>
+                <div class="col-12 col-md-4">
+                    <div class="benefit-card d-flex align-items-center p-3 h-100">
+                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Limpieza Total</h5>
+                            <p class="text-muted small mb-0">Mobiliario impecable.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="benefit-card bg-white p-4 rounded-4 shadow-sm h-100 text-center border-0">
-                        <div class="display-4 text-warning mb-3"><i class="bi bi-shield-check"></i></div>
-                        <h4 class="fw-bold mb-2">Seguridad y Confianza</h4>
-                        <p class="text-muted small">Instalación profesional por expertos.</p>
+                <div class="col-12 col-md-4">
+                    <div class="benefit-card d-flex align-items-center p-3 h-100">
+                        <div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Seguridad</h5>
+                            <p class="text-muted small mb-0">Instalación profesional.</p>
+                        </div>
                     </div>
                 </div>
             </div>
