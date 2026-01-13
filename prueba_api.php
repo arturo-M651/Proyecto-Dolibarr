@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V17 (OPTIMIZADO MÓVIL + FUNCIONES V15 INTACTAS)
+ * PRUEBA_API.PHP - V19 (FINAL: PINCH-ZOOM + LEYENDAS INFORMATIVAS 2D/3D)
  * ==============================================================================
  */
 
@@ -76,7 +76,7 @@ if ($cat_id) {
             padding-bottom: 5px;
             gap: 0.5rem;
         }
-        .filters-scroll-mobile::-webkit-scrollbar { display: none; } /* Ocultar barra scroll */
+        .filters-scroll-mobile::-webkit-scrollbar { display: none; } 
 
         /* Simulador 3D */
         #contenedorCanvas {
@@ -87,7 +87,8 @@ if ($cat_id) {
             background-color: #ffffff;
             background-image: linear-gradient(#f5f5f5 1px, transparent 1px), linear-gradient(90deg, #f5f5f5 1px, transparent 1px);
             background-size: 20px 20px;
-            overflow: hidden; 
+            overflow: hidden;
+            touch-action: none; 
         }
         
         canvas#canvasPlano {
@@ -121,6 +122,33 @@ if ($cat_id) {
         }
         .view-btn.active {
             background: #0e4c81; color: white; box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
+        }
+
+        /* ESTILOS NUEVOS PARA LAS LEYENDAS INFORMATIVAS */
+        .info-legend {
+            position: absolute;
+            top: 20px; 
+            left: 20px;
+            max-width: 200px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(2px);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            font-size: 0.75rem;
+            color: #555;
+            z-index: 10;
+            pointer-events: none; /* Permite clics a través de la etiqueta */
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            line-height: 1.3;
+        }
+        .info-legend i {
+            font-size: 1rem;
+            color: #0e4c81; /* Azul Montes */
+            margin-top: 1px;
         }
     </style>
 </head>
@@ -190,7 +218,6 @@ if ($cat_id) {
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="2"></button>
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="3"></button>
                 <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="4"></button>
-                <button type="button" data-bs-target="#carruselHome" data-bs-slide-to="5"></button>
             </div>
             <div class="carousel-inner">
                 <div class="carousel-item active carousel-item-responsive">
@@ -203,7 +230,6 @@ if ($cat_id) {
                 <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa-hule.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Carpa"></div>
                 <div class="carousel-item carousel-item-responsive"><img src="carrusel/arcoiris.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Decoración"></div>
                 <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Calidad"></div>
-                <div class="carousel-item carousel-item-responsive"><img src="carrusel/carpa-f.jpeg" class="d-block w-100 h-100 object-fit-cover" alt="Magico"></div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carruselHome" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
@@ -442,6 +468,16 @@ if ($cat_id) {
                                     </div>
                                     <div class="tab-pane fade h-100" id="pills-plano">
                                         <div class="card border-0 shadow-sm h-100" id="contenedorCanvas">
+                                            
+                                            <div id="info2D" class="info-legend">
+                                                <i class="bi bi-grid-3x3"></i>
+                                                <span>Cuadrícula:<br>1 cuadro = 1 metro</span>
+                                            </div>
+                                            <div id="info3D" class="info-legend" style="display:none;">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span>Render referencial.<br>La estructura varía según medidas.</span>
+                                            </div>
+
                                             <div class="view-switch">
                                                 <button class="view-btn active" id="btn2D" onclick="setMode('2d')">2D Plano</button>
                                                 <button class="view-btn" id="btn3D" onclick="setMode('3d')">3D Estructura</button>
@@ -522,7 +558,8 @@ if ($cat_id) {
         mode: '2d', // '2d' o '3d'
         scale: 20, 
         offsetX: 0, offsetY: 0, 
-        isDragging: false, lastX: 0, lastY: 0
+        isDragging: false, lastX: 0, lastY: 0,
+        lastPinchDist: 0 
     };
 
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
@@ -531,16 +568,21 @@ if ($cat_id) {
 
     renderizar();
 
-    // --- CANVAS EVENTS ---
     const canvas = document.getElementById('canvasPlano');
     const container = document.getElementById('contenedorCanvas');
 
-    canvas.addEventListener('mousedown', (e) => { viewState.isDragging = true; viewState.lastX = e.clientX; viewState.lastY = e.clientY; });
+    // --- EVENTOS MOUSE ---
+    canvas.addEventListener('mousedown', (e) => { 
+        viewState.isDragging = true; 
+        viewState.lastX = e.clientX; 
+        viewState.lastY = e.clientY; 
+    });
     window.addEventListener('mousemove', (e) => {
         if (!viewState.isDragging) return;
         viewState.offsetX += e.clientX - viewState.lastX;
         viewState.offsetY += e.clientY - viewState.lastY;
-        viewState.lastX = e.clientX; viewState.lastY = e.clientY;
+        viewState.lastX = e.clientX; 
+        viewState.lastY = e.clientY;
         requestAnimationFrame(dibujarPlano);
     });
     window.addEventListener('mouseup', () => viewState.isDragging = false);
@@ -551,16 +593,52 @@ if ($cat_id) {
         requestAnimationFrame(dibujarPlano); 
     });
     
-    canvas.addEventListener('touchstart', (e) => { if(e.touches.length === 1) { viewState.isDragging = true; viewState.lastX = e.touches[0].clientX; viewState.lastY = e.touches[0].clientY; } });
-    canvas.addEventListener('touchmove', (e) => {
-        if (!viewState.isDragging) return;
-        viewState.offsetX += e.touches[0].clientX - viewState.lastX;
-        viewState.offsetY += e.touches[0].clientY - viewState.lastY;
-        viewState.lastX = e.touches[0].clientX; viewState.lastY = e.touches[0].clientY;
-        requestAnimationFrame(dibujarPlano);
+    // --- EVENTOS TÁCTILES ---
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            viewState.isDragging = true;
+            viewState.lastX = e.touches[0].clientX;
+            viewState.lastY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+            viewState.isDragging = false; 
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            viewState.lastPinchDist = Math.hypot(dx, dy);
+        }
     });
-    canvas.addEventListener('touchend', () => viewState.isDragging = false);
 
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); 
+
+        if (e.touches.length === 1 && viewState.isDragging) {
+            viewState.offsetX += e.touches[0].clientX - viewState.lastX;
+            viewState.offsetY += e.touches[0].clientY - viewState.lastY;
+            viewState.lastX = e.touches[0].clientX;
+            viewState.lastY = e.touches[0].clientY;
+            requestAnimationFrame(dibujarPlano);
+
+        } else if (e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const currentDist = Math.hypot(dx, dy);
+
+            if (viewState.lastPinchDist > 0) {
+                const zoomFactor = currentDist / viewState.lastPinchDist;
+                viewState.scale *= zoomFactor;
+                if(viewState.scale < 5) viewState.scale = 5;
+                if(viewState.scale > 100) viewState.scale = 100;
+            }
+            viewState.lastPinchDist = currentDist;
+            requestAnimationFrame(dibujarPlano);
+        }
+    });
+
+    canvas.addEventListener('touchend', () => {
+        viewState.isDragging = false;
+        viewState.lastPinchDist = 0;
+    });
+
+    // --- REDIMENSIONADO ---
     const resizeObserver = new ResizeObserver(entries => {
         for (let entry of entries) {
             const { width, height } = entry.contentRect;
@@ -606,7 +684,6 @@ if ($cat_id) {
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
             document.getElementById('lblPrecioTotal').innerText = ""; 
             
-            // Default a 2D para comenzar (más claro)
             setMode('2d'); 
 
         } else {
@@ -646,12 +723,16 @@ if ($cat_id) {
         } catch (e) { contenedor.innerHTML = ''; }
     }
 
-    // --- CONTROLES DE VISTA ---
     function setMode(mode) {
         viewState.mode = mode;
         document.getElementById('btn2D').classList.toggle('active', mode === '2d');
         document.getElementById('btn3D').classList.toggle('active', mode === '3d');
-        autoFit(); // Reajustar cámara al cambiar
+        
+        // MOSTRAR/OCULTAR LEYENDAS
+        document.getElementById('info2D').style.display = (mode === '2d') ? 'flex' : 'none';
+        document.getElementById('info3D').style.display = (mode === '3d') ? 'flex' : 'none';
+        
+        autoFit(); 
     }
 
     function iniciarRender() { requestAnimationFrame(dibujarPlano); }
@@ -680,52 +761,33 @@ if ($cat_id) {
         dibujarPlano();
     }
 
-    function dibujarPlano() {
-        if (viewState.mode === '2d') {
-            dibujar2D();
-        } else {
-            dibujar3D();
-        }
-    }
+    function dibujarPlano() { if (viewState.mode === '2d') { dibujar2D(); } else { dibujar3D(); } }
 
-    // --- RENDER 2D PLANO (TOP-DOWN) ---
     function dibujar2D() {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const largo = parseInt(document.getElementById('inputLargo').value) || 5;
         const ancho = anchoFijo;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Centro y Escala
         const cx = (canvas.width / 2) + viewState.offsetX;
         const cy = (canvas.height / 2) + viewState.offsetY;
         const scale = viewState.scale;
-
-        const rectW = ancho * scale;
-        const rectH = largo * scale;
-        const startX = cx - (rectW / 2);
-        const startY = cy - (rectH / 2);
-
-        // Grid Interno
+        const rectW = ancho * scale; const rectH = largo * scale;
+        const startX = cx - (rectW / 2); const startY = cy - (rectH / 2);
+        
         ctx.beginPath(); ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
         for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * scale), startY, 0, rectH); 
         for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * scale), rectW, 0);
         
-        // Contorno
-        ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2;
-        ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
-        ctx.fillRect(startX, startY, rectW, rectH);
-        ctx.strokeRect(startX, startY, rectW, rectH);
-
-        // Cotas
+        ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2; ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
+        ctx.fillRect(startX, startY, rectW, rectH); ctx.strokeRect(startX, startY, rectW, rectH);
+        
         ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
         ctx.fillText(`${ancho}m`, cx, startY - 10);
         ctx.save(); ctx.translate(startX - 15, cy); ctx.rotate(-Math.PI / 2);
         ctx.fillText(`${largo}m`, 0, 0); ctx.restore();
     }
 
-    // --- RENDER 3D ESTRUCTURAL (ISOMÉTRICO) ---
     function dibujar3D() {
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
@@ -733,82 +795,51 @@ if ($cat_id) {
         const ancho = anchoFijo;
         const alturaPoste = 3.5;
         const alturaCumbrera = 1.5;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         const cx = (canvas.width / 2) + viewState.offsetX;
         const cy = (canvas.height * 0.6) + viewState.offsetY;
         const scale = viewState.scale;
-
-        function toIso(x, y, z) {
-            return {
-                x: cx + (x - y) * scale,
-                y: cy + (x + y) * scale * 0.5 - (z * scale)
-            };
-        }
-
-        let numSecciones = Math.max(1, Math.round(largo / 5)); 
-        if (largo <= 5) numSecciones = 1;
-        let paso = largo / numSecciones;
-
+        function toIso(x, y, z) { return { x: cx + (x - y) * scale, y: cy + (x + y) * scale * 0.5 - (z * scale) }; }
+        
+        let numSecciones = Math.max(1, Math.round(largo / 5)); if (largo <= 5) numSecciones = 1; let paso = largo / numSecciones;
         ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-
-        // Piso
         ctx.beginPath(); ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 1;
         let p0 = toIso(0,0,0); let p1 = toIso(ancho,0,0); let p2 = toIso(ancho,largo,0); let p3 = toIso(0,largo,0);
         ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath(); ctx.stroke();
 
-        // Estructura (Postes)
         for (let i = 0; i <= numSecciones; i++) {
             let yActual = i * paso;
             let baseIzq = toIso(0, yActual, 0); let topIzq = toIso(0, yActual, alturaPoste);
             let baseDer = toIso(ancho, yActual, 0); let topDer = toIso(ancho, yActual, alturaPoste);
             let cumbrera = toIso(ancho/2, yActual, alturaPoste + alturaCumbrera);
-
-            ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
-            ctx.beginPath();
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath();
             ctx.moveTo(baseIzq.x, baseIzq.y); ctx.lineTo(topIzq.x, topIzq.y);
             ctx.moveTo(baseDer.x, baseDer.y); ctx.lineTo(topDer.x, topDer.y);
             ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.lineTo(topDer.x, topDer.y);
-            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y);
-            ctx.stroke();
-
-            ctx.strokeStyle = '#999'; ctx.lineWidth = 1;
-            ctx.beginPath();
+            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y); ctx.stroke();
+            ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.beginPath();
             let centroViga = toIso(ancho/2, yActual, alturaPoste);
-            ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); 
-            ctx.stroke();
+            ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.stroke();
         }
 
-        // Conexiones
-        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
-        ctx.beginPath();
+        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.beginPath();
         let cumbInicio = toIso(ancho/2, 0, alturaPoste + alturaCumbrera);
         let cumbFin = toIso(ancho/2, largo, alturaPoste + alturaCumbrera);
         ctx.moveTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y);
-        
         let aleroIzqIni = toIso(0, 0, alturaPoste); let aleroIzqFin = toIso(0, largo, alturaPoste);
         ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y);
-        
         let aleroDerIni = toIso(ancho, 0, alturaPoste); let aleroDerFin = toIso(ancho, largo, alturaPoste);
-        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y);
-        ctx.stroke();
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.stroke();
 
-        // Lona Semitransparente
-        ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; 
+        ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; ctx.beginPath();
+        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y);
-        ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y);
-        ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill();
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill();
 
-        // Cotas
         ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.lineWidth = 1;
         let ac1 = toIso(ancho, -1, 0); let ac2 = toIso(0, -1, 0);
         ctx.beginPath(); ctx.moveTo(ac1.x, ac1.y); ctx.lineTo(ac2.x, ac2.y); ctx.stroke();
         ctx.fillText(`${ancho}m`, (ac1.x+ac2.x)/2 - 10, (ac1.y+ac2.y)/2); 
-
         let lc1 = toIso(-1, 0, 0); let lc2 = toIso(-1, largo, 0);
         ctx.beginPath(); ctx.moveTo(lc1.x, lc1.y); ctx.lineTo(lc2.x, lc2.y); ctx.stroke();
         ctx.fillText(`${largo}m`, (lc1.x+lc2.x)/2 - 10, (lc1.y+lc2.y)/2);
