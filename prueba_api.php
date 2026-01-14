@@ -326,7 +326,7 @@ if ($cat_id) {
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
                              onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" onerror="this.src='https://placehold.co/300x300/f8fafc/0e4c81?text=Sin+Foto'">
-                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge">$<?php echo number_format($price, 2); ?> m²</span>
+                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge">$<?php echo number_format($price, 2); ?> </span>
                         </div>
                         <div class="p-3 d-flex flex-column flex-grow-1">
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>

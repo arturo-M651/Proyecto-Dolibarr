@@ -1,52 +1,46 @@
 <?php
 /**
- * OBTENER_FOTOS.PHP - Busca todas las imágenes de un producto para la galería
+ * OBTENER_FOTOS.PHP - V3 (MODO LOCAL: CARPETA FOTOS_EXTRA)
+ * Escanea la carpeta 'fotos_extra/REFERENCIA' en tu servidor.
  */
-require_once 'config.php';
 
+// Configuración básica
 header('Content-Type: application/json');
-
 $ref = isset($_GET['ref']) ? $_GET['ref'] : '';
 
+// Si no hay referencia, devolvemos vacío
 if (!$ref) {
     echo json_encode([]);
     exit;
 }
 
-// Pedimos a la API la lista de documentos de este producto
-$api_url = DOL_BASE_URL . "/documents?modulepart=product&sortfield=date_creation&sortorder=DESC&ref=" . urlencode($ref);
+// Limpiamos la referencia para evitar caracteres raros en la ruta
+$ref_limpia = preg_replace('/[^a-zA-Z0-9_-]/', '', $ref);
 
-$curl = curl_init();
-curl_setopt_array($curl, [
-    CURLOPT_URL => $api_url,
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HTTPHEADER => [
-        "DOLAPIKEY: " . DOL_API_KEY,
-        "Accept: application/json"
-    ],
-    CURLOPT_SSL_VERIFYPEER => false
-]);
-
-$response = curl_exec($curl);
-$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-curl_close($curl);
+// Definimos la ruta donde buscar
+// Estructura: fotos_extra / C15X15-4A / foto1.jpg
+$ruta_carpeta = "fotos_extra/" . $ref;
 
 $imagenes = [];
 
-if ($http_code == 200) {
-    $docs = json_decode($response, true);
-    if (is_array($docs)) {
-        foreach ($docs as $doc) {
-            // Filtramos solo imágenes (jpg, png, webp, etc.)
-            if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $doc['name'])) {
-                // Generamos la URL segura usando nuestro proxy imagen.php
-                // nivel=0 significa archivo principal, nivel=1 subcarpetas. Dolibarr normal usa nivel 0 para productos.
-                $imagenes[] = "imagen.php?ref=" . urlencode($ref) . "&file=" . urlencode($doc['name']);
+// Verificamos si la carpeta existe
+if (is_dir($ruta_carpeta)) {
+    // Escaneamos los archivos
+    $archivos = scandir($ruta_carpeta);
+    
+    foreach ($archivos as $archivo) {
+        // Ignoramos los puntos de sistema (. y ..)
+        if ($archivo !== '.' && $archivo !== '..') {
+            // Verificamos que sea una imagen real
+            if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $archivo)) {
+                // Agregamos la ruta pública al array
+                // Nota: rawurlencode permite nombres con espacios
+                $imagenes[] = "fotos_extra/" . $ref . "/" . rawurlencode($archivo);
             }
         }
     }
 }
 
-// Devolvemos la lista de URLs al Frontend
+// Devolvemos la lista al frontend
 echo json_encode($imagenes);
 ?>
