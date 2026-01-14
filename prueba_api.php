@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V19 (FINAL: PINCH-ZOOM + LEYENDAS INFORMATIVAS 2D/3D)
+ * PRUEBA_API.PHP - V20 (FINAL: SOLO PEDIDOS + SIMULADOR COMPLETO)
  * ==============================================================================
  */
 
@@ -56,9 +56,7 @@ if ($cat_id) {
     <link rel="stylesheet" href="estilos.css">
     
     <style>
-        /* CSS ESPECIAL PARA MÓVIL (Sin tocar el de escritorio) */
-        
-        /* Ajuste de altura del carrusel en móvil */
+        /* CSS ESPECIAL PARA MÓVIL */
         .carousel-item-responsive { height: 450px; transition: height 0.3s ease; }
         @media (max-width: 768px) {
             .carousel-item-responsive { height: 280px !important; }
@@ -67,7 +65,7 @@ if ($cat_id) {
             .navbar-brand span { font-size: 1.2rem !important; }
         }
 
-        /* Filtros con scroll horizontal en móvil (tipo App) */
+        /* Filtros con scroll horizontal */
         .filters-scroll-mobile {
             display: flex;
             overflow-x: auto;
@@ -124,7 +122,7 @@ if ($cat_id) {
             background: #0e4c81; color: white; box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
 
-        /* ESTILOS NUEVOS PARA LAS LEYENDAS INFORMATIVAS */
+        /* LEYENDAS INFORMATIVAS */
         .info-legend {
             position: absolute;
             top: 20px; 
@@ -139,7 +137,7 @@ if ($cat_id) {
             font-size: 0.75rem;
             color: #555;
             z-index: 10;
-            pointer-events: none; /* Permite clics a través de la etiqueta */
+            pointer-events: none; 
             display: flex;
             align-items: start;
             gap: 8px;
@@ -147,7 +145,7 @@ if ($cat_id) {
         }
         .info-legend i {
             font-size: 1rem;
-            color: #0e4c81; /* Azul Montes */
+            color: #0e4c81; 
             margin-top: 1px;
         }
     </style>
@@ -336,7 +334,7 @@ if ($cat_id) {
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
-                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver' : 'Ver'; ?>
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver Detalles' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
@@ -431,11 +429,16 @@ if ($cat_id) {
                 </div>
             </div>
             <div class="modal-footer flex-column border-0 pt-0">
-                <div class="d-flex w-100 gap-2 mb-2">
-                    <button class="btn btn-outline-warning w-50 rounded-pill fw-bold" onclick="enviarPedido('cotizacion')">Solo Cotizar</button>
-                    <button class="btn btn-gold w-50 rounded-pill fw-bold" onclick="enviarPedido('pedido')">Hacer Pedido</button>
+                <div class="row w-100 g-2">
+                    <div class="col-12">
+                        <button class="btn btn-gold w-100 rounded-pill fw-bold shadow-sm" onclick="enviarPedido('pedido')">
+                            <i class="bi bi-check-circle-fill me-2"></i> Confirmar Pedido
+                        </button>
+                    </div>
+                    <div class="col-12 text-center mt-2">
+                         <button class="btn btn-link text-muted btn-sm text-decoration-none" onclick="borrarTodo()">Vaciar Carrito</button>
+                    </div>
                 </div>
-                <button class="btn btn-link text-muted btn-sm text-decoration-none" onclick="borrarTodo()">Vaciar</button>
             </div>
         </div>
     </div>
