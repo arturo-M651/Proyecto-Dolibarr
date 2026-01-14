@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V20 (FINAL: SOLO PEDIDOS + SIMULADOR COMPLETO)
+ * PRUEBA_API.PHP - V21 (FINAL: ACLARACIÓN PRECIO M2 + GALERÍA LOCAL)
  * ==============================================================================
  */
 
@@ -326,7 +326,14 @@ if ($cat_id) {
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
                              onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" onerror="this.src='https://placehold.co/300x300/f8fafc/0e4c81?text=Sin+Foto'">
-                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge">$<?php echo number_format($price, 2); ?> </span>
+                            
+                            <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge" style="font-size: 0.8rem;">
+                                $<?php echo number_format($price, 2); ?>
+                                <?php if ($es_modular): ?>
+                                    <span class="text-muted ms-1" style="font-size: 0.75em; font-weight: normal;">/ m²</span>
+                                <?php endif; ?>
+                            </span>
+
                         </div>
                         <div class="p-3 d-flex flex-column flex-grow-1">
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
@@ -334,7 +341,7 @@ if ($cat_id) {
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
-                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver Detalles' : 'Ver'; ?>
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
