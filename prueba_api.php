@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V21 (FINAL: ACLARACIÓN PRECIO M2 + GALERÍA LOCAL)
+ * PRUEBA_API.PHP - V22 (FINAL: LEYENDAS ABAJO + SIMULADOR COMPLETO)
  * ==============================================================================
  */
 
@@ -122,31 +122,35 @@ if ($cat_id) {
             background: #0e4c81; color: white; box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
 
-        /* LEYENDAS INFORMATIVAS */
+        /* LEYENDAS INFORMATIVAS - POSICIÓN CORREGIDA (ABAJO AL CENTRO) */
         .info-legend {
             position: absolute;
-            top: 20px; 
-            left: 20px;
-            max-width: 200px;
+            bottom: 20px; /* Antes top: 20px */
+            left: 50%;    /* Centrado Horizontal */
+            transform: translateX(-50%); /* Ajuste fino de centro */
+            
+            max-width: 250px; /* Un poco más ancho para evitar saltos de línea feos */
+            width: max-content; /* Se ajusta al contenido */
+            
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(2px);
-            padding: 8px 12px;
+            padding: 8px 9px;
             border-radius: 12px;
             border: 1px solid #e0e0e0;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            font-size: 0.75rem;
+            font-size: 0.55rem;
             color: #555;
             z-index: 10;
             pointer-events: none; 
             display: flex;
-            align-items: start;
+            align-items: center; /* Centrar verticalmente icono y texto */
             gap: 8px;
-            line-height: 1.3;
+            line-height: 1.2;
+            text-align: center; /* Texto centrado se ve mejor abajo */
         }
         .info-legend i {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #0e4c81; 
-            margin-top: 1px;
         }
     </style>
 </head>
@@ -331,6 +335,7 @@ if ($cat_id) {
                                 $<?php echo number_format($price, 2); ?>
                                 <?php if ($es_modular): ?>
                                     <span class="text-muted ms-1" style="font-size: 0.75em; font-weight: normal;">/ m²</span>
+                                    <!--i class="bi bi-info-circle-fill text-primary ms-1" title="Precio por metro cuadrado"></i-->
                                 <?php endif; ?>
                             </span>
 
@@ -341,7 +346,7 @@ if ($cat_id) {
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
-                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver Detalles' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
@@ -485,7 +490,8 @@ if ($cat_id) {
                                             </div>
                                             <div id="info3D" class="info-legend" style="display:none;">
                                                 <i class="bi bi-info-circle"></i>
-                                                <span>Render referencial.<br>La estructura varía según medidas.</span>
+                                                <span>Render referencial.<br>La estructura varía<br>
+                                                Segun medidas.</span>
                                             </div>
 
                                             <div class="view-switch">
