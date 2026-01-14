@@ -1,7 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V22 (FINAL: LEYENDAS ABAJO + SIMULADOR COMPLETO)
+ * PRUEBA_API.PHP - V23 (FINAL: INTERRUPTOR MOBILIARIO PAQUETE/UNIDAD)
  * ==============================================================================
  */
 
@@ -34,6 +34,9 @@ if ($cat_id && is_array($lista_categorias)) {
         if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; }
     }
 }
+
+// Detectamos si estamos en la categoría Mobiliario para activar el Switch
+$es_mobiliario = (stripos($titulo_pagina, 'Mobiliario') !== false);
 
 $productos = [];
 if ($cat_id) {
@@ -76,6 +79,45 @@ if ($cat_id) {
         }
         .filters-scroll-mobile::-webkit-scrollbar { display: none; } 
 
+        /* INTERRUPTOR TIPO IOS (MOBILIARIO) */
+        .mode-switch-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .mode-switch {
+            background: #e0e0e0;
+            border-radius: 25px;
+            padding: 4px;
+            display: flex;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mode-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 2;
+            min-width: 110px;
+        }
+        .mode-btn.active { color: #fff; }
+        .mode-slider {
+            position: absolute;
+            top: 4px; left: 4px; bottom: 4px;
+            width: calc(50% - 4px);
+            background: #0e4c81; /* Azul Montes */
+            border-radius: 20px;
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+            z-index: 1;
+            box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
+        }
+
         /* Simulador 3D */
         #contenedorCanvas {
             position: relative;
@@ -107,8 +149,7 @@ if ($cat_id) {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             color: #333; transition: all 0.2s; font-size: 1.2rem;
         }
-        .btn-control:hover { background: #f8f9fa; transform: translateY(-2px); }
-
+        
         .view-switch {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: white; padding: 4px; border-radius: 30px;
@@ -122,16 +163,13 @@ if ($cat_id) {
             background: #0e4c81; color: white; box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
 
-        /* LEYENDAS INFORMATIVAS - POSICIÓN CORREGIDA (ABAJO AL CENTRO) */
         .info-legend {
             position: absolute;
-            bottom: 20px; /* Antes top: 20px */
-            left: 50%;    /* Centrado Horizontal */
-            transform: translateX(-50%); /* Ajuste fino de centro */
-            
-            max-width: 250px; /* Un poco más ancho para evitar saltos de línea feos */
-            width: max-content; /* Se ajusta al contenido */
-            
+            bottom: 20px; 
+            left: 50%;    
+            transform: translateX(-50%); 
+            max-width: 250px; 
+            width: max-content; 
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(2px);
             padding: 8px 9px;
@@ -143,15 +181,12 @@ if ($cat_id) {
             z-index: 10;
             pointer-events: none; 
             display: flex;
-            align-items: center; /* Centrar verticalmente icono y texto */
+            align-items: center; 
             gap: 8px;
             line-height: 1.2;
-            text-align: center; /* Texto centrado se ve mejor abajo */
+            text-align: center; 
         }
-        .info-legend i {
-            font-size: 1.1rem;
-            color: #0e4c81; 
-        }
+        .info-legend i { font-size: 1.1rem; color: #0e4c81; }
     </style>
 </head>
 <body class="bg-light">
@@ -237,7 +272,7 @@ if ($cat_id) {
             <button class="carousel-control-next" type="button" data-bs-target="#carruselHome" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
         </div>
 
-      <div class="benefits-section mb-5" data-aos="fade-up">
+        <div class="benefits-section mb-5" data-aos="fade-up">
             <div class="row g-3 g-md-4">
                 <div class="col-12 col-md-4">
                     <div class="benefit-card d-flex align-items-center p-3 h-100">
@@ -301,6 +336,16 @@ if ($cat_id) {
             <a href="prueba_api.php" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Volver</a>
         </div>
         
+        <?php if ($es_mobiliario): ?>
+        <div class="mode-switch-container" data-aos="fade-down">
+            <div class="mode-switch">
+                <div class="mode-slider" id="modeSlider"></div>
+                <button class="mode-btn active" onclick="filtrarMobiliario('unidad')">Por Unidad</button>
+                <button class="mode-btn" onclick="filtrarMobiliario('paquete')">Por Paquete</button>
+            </div>
+        </div>
+        <?php endif; ?>
+
         <div class="row g-4" id="contenedorProductos">
             <?php
             if (isset($productos['error']) || empty($productos)) {
@@ -315,17 +360,32 @@ if ($cat_id) {
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
 
-                    // --- DETECCIÓN INTELIGENTE: ¿ES CARPA? ---
+                    // --- DETECCIÓN: ¿ES CARPA? ---
                     $es_modular = false;
-                    $keywords = ['carpa', 'toldo', 'ancho', 'estructura'];
-                    foreach ($keywords as $kw) {
+                    $keywords_modular = ['carpa', 'toldo', 'ancho', 'estructura'];
+                    foreach ($keywords_modular as $kw) {
                         if (stripos($label, $kw) !== false) {
                             $es_modular = true;
                             break;
                         }
                     }
+
+                    // --- DETECCIÓN: ¿ES PAQUETE DE MOBILIARIO? ---
+                    $es_paquete = false;
+                    // Palabras clave para detectar si es un paquete armado
+                    $keywords_paquete = ['sencilla', 'vestida', 'paquete', 'juego', 'tablon con', 'mesa con', 'sala', 'periquera'];
+                    foreach ($keywords_paquete as $kw) {
+                        if (stripos($label, $kw) !== false) {
+                            $es_paquete = true;
+                            break;
+                        }
+                    }
             ?>
-                <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-aos="zoom-in">
+                <div class="col-6 col-md-4 col-lg-3 item-producto" 
+                     data-nombre="<?php echo strtolower($label); ?>" 
+                     data-tipo="<?php echo $es_paquete ? 'paquete' : 'unidad'; ?>"
+                     data-aos="zoom-in">
+                     
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
                              onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
@@ -335,10 +395,8 @@ if ($cat_id) {
                                 $<?php echo number_format($price, 2); ?>
                                 <?php if ($es_modular): ?>
                                     <span class="text-muted ms-1" style="font-size: 0.75em; font-weight: normal;">/ m²</span>
-                                    <!--i class="bi bi-info-circle-fill text-primary ms-1" title="Precio por metro cuadrado"></i-->
                                 <?php endif; ?>
                             </span>
-
                         </div>
                         <div class="p-3 d-flex flex-column flex-grow-1">
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
@@ -346,7 +404,7 @@ if ($cat_id) {
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
-                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver Detalles' : 'Ver'; ?>
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
@@ -490,8 +548,7 @@ if ($cat_id) {
                                             </div>
                                             <div id="info3D" class="info-legend" style="display:none;">
                                                 <i class="bi bi-info-circle"></i>
-                                                <span>Render referencial.<br>La estructura varía<br>
-                                                Segun medidas.</span>
+                                                <span>Render referencial.<br>La estructura varía según medidas.</span>
                                             </div>
 
                                             <div class="view-switch">
@@ -519,7 +576,7 @@ if ($cat_id) {
                             <h3 class="text-gold fw-bold mb-3" id="detallePrecio"></h3>
                             <div class="mb-4 flex-grow-1">
                                 <h6 class="fw-bold small text-dark mb-1">Descripción:</h6>
-                                <p class="text-muted small lh-sm" id="detalleDesc" style="max-height: 150px; overflow-y: auto;"></p>
+                                <p class="text-muted small lh-sm" id="detalleDesc" style="max-height: 250px; overflow-y: auto;"></p>
                             </div>
                             <div class="mt-auto pt-3 border-top">
                                 <div id="panelMedidas" class="mb-3 p-3 bg-light rounded-3 border" style="display:none;">
@@ -561,6 +618,42 @@ if ($cat_id) {
 <script>
     AOS.init({ once: true, disable: 'mobile' });
     
+    // --- LÓGICA DE FILTRADO MOBILIARIO ---
+    function filtrarMobiliario(modo) {
+        // Actualizar botones
+        const btns = document.querySelectorAll('.mode-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Mover el slider azul
+        const slider = document.getElementById('modeSlider');
+        slider.style.transform = (modo === 'paquete') ? 'translateX(100%)' : 'translateX(0)';
+        
+        // Filtrar productos
+        const productos = document.querySelectorAll('.item-producto');
+        let visibles = 0;
+        
+        productos.forEach(prod => {
+            const tipo = prod.getAttribute('data-tipo');
+            if (tipo === modo) {
+                prod.style.display = 'block';
+                // Reiniciar animación para que se vea bonito
+                prod.classList.remove('aos-animate');
+                setTimeout(() => prod.classList.add('aos-animate'), 50);
+                visibles++;
+            } else {
+                prod.style.display = 'none';
+            }
+        });
+        
+        // Si no hay productos, mostrar mensaje (opcional)
+        const contenedor = document.getElementById('contenedorProductos');
+        if(visibles === 0) {
+            // Podrías mostrar un mensaje de "No hay paquetes disponibles"
+        }
+    }
+
+    // Inicialización del resto del sistema...
     let carrito = JSON.parse(localStorage.getItem('carrito_v2')) || [];
     let tempProducto = null; 
     let currentProductoId = null;
@@ -571,18 +664,23 @@ if ($cat_id) {
     let anchoFijo = 0;
     
     let viewState = {
-        mode: '2d', // '2d' o '3d'
-        scale: 20, 
-        offsetX: 0, offsetY: 0, 
-        isDragging: false, lastX: 0, lastY: 0,
-        lastPinchDist: 0 
+        mode: '2d', scale: 20, offsetX: 0, offsetY: 0, 
+        isDragging: false, lastX: 0, lastY: 0, lastPinchDist: 0 
     };
 
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
     const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
     const modalCarritoBootstrap = new bootstrap.Modal(document.getElementById('modalCarrito'));
 
-    renderizar();
+    // Al cargar, si hay switch, filtrar por defecto a 'unidad'
+    document.addEventListener('DOMContentLoaded', () => {
+        if(document.querySelector('.mode-switch')) {
+            filtrarMobiliario('unidad'); 
+            // Forzamos visualmente el botón activo correcto por si acaso
+            document.querySelector('.mode-btn').classList.add('active');
+        }
+        renderizar();
+    });
 
     const canvas = document.getElementById('canvasPlano');
     const container = document.getElementById('contenedorCanvas');
@@ -670,8 +768,15 @@ if ($cat_id) {
         buscador.addEventListener('keyup', function(e) {
             const texto = e.target.value.toLowerCase();
             document.querySelectorAll('.item-producto').forEach(item => {
-                const nombre = item.getAttribute('data-nombre');
-                item.style.display = nombre.includes(texto) ? 'block' : 'none';
+                // Solo buscamos en los elementos visibles (respetando el filtro de paquete/unidad)
+                if(item.style.display !== 'none'){
+                    const nombre = item.getAttribute('data-nombre');
+                    // Ojo: Esto podría conflictuar con el filtro. 
+                    // Lo ideal es que el buscador muestre todo si coincide, 
+                    // o solo dentro de la pestaña activa. 
+                    // Por ahora, búsqueda simple:
+                    item.style.display = nombre.includes(texto) ? 'block' : 'none';
+                }
             });
         });
     }
