@@ -1,7 +1,8 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V24 (FINAL: SELECTOR DE COLOR PARA MANTELERÍA)
+ * PRUEBA_API.PHP - V28 (FINAL BLINDADO: DATA-ATTRIBUTES + MANTELERÍA V2)
+ * Solución definitiva a botones bloqueados y conflictos de JS.
  * ==============================================================================
  */
 
@@ -118,7 +119,7 @@ if ($cat_id) {
             box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
 
-        /* ESTILOS PALETA DE COLORES (NUEVO) */
+        /* ESTILOS PALETA DE COLORES */
         .color-swatch {
             width: 30px;
             height: 30px;
@@ -135,7 +136,7 @@ if ($cat_id) {
             transform: scale(1.2);
             box-shadow: 0 0 0 2px #fff, 0 4px 8px rgba(0,0,0,0.3);
         }
-        .color-swatch.white-color { border: 1px solid #ddd; } /* Borde para el blanco */
+        .color-swatch.white-color { border: 1px solid #ddd; } 
 
         /* Simulador 3D */
         #contenedorCanvas {
@@ -360,9 +361,9 @@ if ($cat_id) {
                 foreach ($productos as $producto) {
                     $id = $producto['id'];
                     $ref = $producto['ref'];
-                    $label = addslashes($producto['label']); 
+                    $label = $producto['label']; 
                     $price = (float)$producto['price']; 
-                    $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
+                    $desc = isset($producto['description']) ? str_replace(["\r", "\n"], " ", $producto['description']) : '';
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
 
@@ -386,8 +387,16 @@ if ($cat_id) {
                      data-aos="zoom-in">
                      
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
+                        
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
-                             onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
+                             data-ref="<?php echo $ref; ?>"
+                             data-nombre="<?php echo htmlspecialchars($label); ?>"
+                             data-desc="<?php echo htmlspecialchars($desc); ?>"
+                             data-precio="<?php echo $price; ?>"
+                             data-img="<?php echo $img_src; ?>"
+                             data-id="<?php echo $id; ?>"
+                             onclick="verDetalles(this)">
+                             
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" onerror="this.src='https://placehold.co/300x300/f8fafc/0e4c81?text=Sin+Foto'">
                             
                             <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge" style="font-size: 0.8rem;">
@@ -401,13 +410,20 @@ if ($cat_id) {
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
                             <small class="text-muted mb-3 small product-desc-clamp"><?php echo strip_tags($desc); ?></small>
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
+                                
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
-                                    onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
+                                    data-ref="<?php echo $ref; ?>"
+                                    data-nombre="<?php echo htmlspecialchars($label); ?>"
+                                    data-desc="<?php echo htmlspecialchars($desc); ?>"
+                                    data-precio="<?php echo $price; ?>"
+                                    data-img="<?php echo $img_src; ?>"
+                                    data-id="<?php echo $id; ?>"
+                                    onclick="verDetalles(this)">
                                     <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
-                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
+                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo htmlspecialchars($label); ?>', <?php echo $price; ?>)">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
                                 <?php endif; ?>
@@ -579,9 +595,7 @@ if ($cat_id) {
                             </div>
                             
                             <div id="panelColores" class="mb-3" style="display:none;">
-                                <label class="small fw-bold mb-2 d-block">Elige el Color:</label>
-                                <div class="d-flex flex-wrap gap-2" id="contenedorColores"></div>
-                                <input type="hidden" id="inputColorSeleccionado">
+                                <div id="contenedorColores"></div>
                                 <div id="nombreColorSel" class="small text-muted mt-1 fst-italic"></div>
                             </div>
 
@@ -671,7 +685,7 @@ if ($cat_id) {
     let currentProductoPrecio = 0;
     
     let esCarpaModular = false;
-    let esManteleria = false; // Nueva bandera
+    let esManteleria = false; 
     let anchoFijo = 0;
     
     let viewState = { mode: '2d', scale: 20, offsetX: 0, offsetY: 0, isDragging: false, lastX: 0, lastY: 0, lastPinchDist: 0 };
@@ -688,7 +702,6 @@ if ($cat_id) {
         renderizar();
     });
 
-    // ... (CANVAS EVENTS IGUALES, OMITIDOS PARA BREVEDAD, DEJAR IGUAL) ...
     const canvas = document.getElementById('canvasPlano');
     const container = document.getElementById('contenedorCanvas');
     // --- EVENTOS MOUSE ---
@@ -706,7 +719,17 @@ if ($cat_id) {
     const buscador = document.getElementById('buscadorJS');
     if(buscador){ buscador.addEventListener('keyup', function(e) { const texto = e.target.value.toLowerCase(); document.querySelectorAll('.item-producto').forEach(item => { if(item.style.display !== 'none'){ const nombre = item.getAttribute('data-nombre'); item.style.display = nombre.includes(texto) ? 'block' : 'none'; } }); }); }
 
-    async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
+    // --- FUNCIÓN VER DETALLES V28 (FINAL: LECTURA DATA ATTRIBUTES) ---
+    async function verDetalles(elem) {
+        // Leemos desde los atributos data-* en lugar de argumentos de función
+        // Esto previene errores de sintaxis por comillas o saltos de línea
+        const ref = elem.dataset.ref;
+        const nombre = elem.dataset.nombre;
+        const desc = elem.dataset.desc;
+        const precio = parseFloat(elem.dataset.precio);
+        const imgMain = elem.dataset.img;
+        const id = parseInt(elem.dataset.id);
+
         currentProductoId = id;
         currentProductoNombre = nombre;
         currentProductoPrecio = precio;
@@ -716,148 +739,172 @@ if ($cat_id) {
         document.getElementById('imgPrincipal').src = imgMain;
         document.getElementById('inputCantidadDetalle').value = 1;
         
-        // RESETEAR SELECTOR DE COLOR
-        document.getElementById('inputColorSeleccionado').value = "";
-        document.getElementById('nombreColorSel').innerText = "";
-        const contenedorColores = document.getElementById('contenedorColores');
-        contenedorColores.innerHTML = '';
+        // LIMPIEZA
+        const panelColores = document.getElementById('panelColores');
+        const contColores = document.getElementById('contenedorColores');
+        const nombreColorSel = document.getElementById('nombreColorSel');
+        if(panelColores) panelColores.style.display = 'none';
+        if(contColores) contColores.innerHTML = '';
+        if(nombreColorSel) nombreColorSel.innerText = '';
+        
+        esCarpaModular = false;
+        let esPaqueteVestido = false;
+        let esManteleriaSimple = false;
 
-        // 1. DETECCIÓN CARPA
+        // 1. CARPAS
         if (nombre.toLowerCase().includes("ancho") || nombre.toLowerCase().includes("carpa") || nombre.toLowerCase().includes("toldo")) {
             esCarpaModular = true;
-            esManteleria = false;
             const match = nombre.match(/(\d+)/);
             anchoFijo = match ? parseInt(match[0]) : 10; 
             document.getElementById('panelMedidas').style.display = 'block';
-            document.getElementById('panelColores').style.display = 'none'; // Ocultar colores
+            if(panelColores) panelColores.style.display = 'none'; 
             document.getElementById('divCantidadNormal').style.display = 'none'; 
             document.getElementById('pills-plano-tab').style.display = 'block'; 
             document.getElementById('inputAncho').value = anchoFijo;
             document.getElementById('inputLargo').value = 5; 
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
-            document.getElementById('lblPrecioTotal').innerText = ""; 
-            setMode('2d'); 
-        
-        // 2. DETECCIÓN MANTELERÍA
-        } else if (['mantel', 'servilleta', 'cubre', 'funda', 'moño', 'banda', 'camino'].some(kw => nombre.toLowerCase().includes(kw))) {
-            esCarpaModular = false;
-            esManteleria = true;
             
-            // GENERAR COLORES
-            coloresManteleria.forEach(col => {
-                const div = document.createElement('div');
-                div.className = 'color-swatch' + (col.white ? ' white-color' : '');
-                div.style.backgroundColor = col.hex;
-                div.onclick = function() {
-                    document.querySelectorAll('.color-swatch').forEach(c => c.classList.remove('active'));
-                    div.classList.add('active');
-                    document.getElementById('inputColorSeleccionado').value = col.nombre;
-                    document.getElementById('nombreColorSel').innerText = "Seleccionado: " + col.nombre;
-                };
-                contenedorColores.appendChild(div);
-            });
+            // Render 3D automático después de que el modal es visible
+            setTimeout(() => {
+                setMode('2d');
+                new bootstrap.Tab(document.querySelector('#pills-plano-tab')).show();
+            }, 200);
+
+        // 2. PAQUETE MESA VESTIDA
+        } else if (nombre.toLowerCase().includes("vestida")) {
+            esPaqueteVestido = true;
+            if(panelColores) panelColores.style.display = 'block';
+            
+            if(contColores) {
+                contColores.innerHTML = `
+                    <div class="mb-3">
+                        <label class="small fw-bold d-block mb-2">1. Color Cubre Mantel:</label>
+                        <div class="d-flex flex-wrap gap-2" id="paletaCubre"></div>
+                        <input type="hidden" id="colorCubre">
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold d-block mb-2">2. Color Moño/Banda:</label>
+                        <div class="d-flex flex-wrap gap-2" id="paletaMono"></div>
+                        <input type="hidden" id="colorMono">
+                    </div>
+                `;
+                generarPaleta('paletaCubre', 'colorCubre');
+                generarPaleta('paletaMono', 'colorMono');
+            }
 
             document.getElementById('panelMedidas').style.display = 'none';
-            document.getElementById('panelColores').style.display = 'block'; // Mostrar colores
             document.getElementById('divCantidadNormal').style.display = 'block';
-            document.getElementById('pills-plano-tab').style.display = 'none'; 
+            document.getElementById('pills-plano-tab').style.display = 'none';
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-            document.getElementById('lblPrecioTotal').innerText = "";
-            const tabBtn = document.querySelector('#pills-foto-tab');
-            new bootstrap.Tab(tabBtn).show();
+            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
 
-        // 3. PRODUCTO NORMAL
+        // 3. MANTELERÍA SIMPLE
+        } else if (['mantel', 'cubre', 'moño', 'servilleta', 'banda', 'camino'].some(kw => nombre.toLowerCase().includes(kw))) {
+            esManteleriaSimple = true;
+            if(panelColores) panelColores.style.display = 'block';
+            if(contColores) {
+                contColores.innerHTML = `
+                    <div class="d-flex flex-wrap gap-2" id="paletaSimple"></div>
+                    <input type="hidden" id="colorSimple">
+                `;
+                generarPaleta('paletaSimple', 'colorSimple');
+            }
+            
+            document.getElementById('panelMedidas').style.display = 'none';
+            document.getElementById('divCantidadNormal').style.display = 'block';
+            document.getElementById('pills-plano-tab').style.display = 'none';
+            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
+            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
+
+        // 4. OTROS
         } else {
-            esCarpaModular = false;
-            esManteleria = false;
             document.getElementById('panelMedidas').style.display = 'none';
-            document.getElementById('panelColores').style.display = 'none';
+            if(panelColores) panelColores.style.display = 'none';
             document.getElementById('divCantidadNormal').style.display = 'block';
-            document.getElementById('pills-plano-tab').style.display = 'none'; 
+            document.getElementById('pills-plano-tab').style.display = 'none';
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-            document.getElementById('lblPrecioTotal').innerText = "";
-            const tabBtn = document.querySelector('#pills-foto-tab');
-            new bootstrap.Tab(tabBtn).show();
+            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
         }
 
         modalDetallesBootstrap.show();
         cargarGaleria(ref, imgMain);
     }
 
-    // ... (FUNCIONES DE CANVAS 3D/2D IGUALES) ...
-    function init3DView() { setTimeout(() => { autoFit(); actualizarCalculosRender(); }, 100); }
-    // ... (Copiar funciones canvas de V22) ...
-    function autoFit() { const largo = parseInt(document.getElementById('inputLargo').value) || 5; const ancho = anchoFijo; const factorZoom = Math.min(canvas.width / (ancho + largo), canvas.height / (ancho + largo)) * (viewState.mode === '3d' ? 18 : 35); viewState.scale = Math.min(factorZoom, 50); viewState.offsetX = 0; viewState.offsetY = 0; requestAnimationFrame(dibujarPlano); }
-    function actualizarCalculosRender() { if(!esCarpaModular) return; const largo = parseInt(document.getElementById('inputLargo').value) || 0; const ancho = anchoFijo; const area = largo * ancho; const total = currentProductoPrecio * area; document.getElementById('lblPrecioTotal').innerText = `($${total.toLocaleString('es-MX')})`; document.getElementById('lblCapacidad').innerText = Math.floor(area/1.5); document.getElementById('lblAreaTotal').innerText = area; dibujarPlano(); }
-    function dibujarPlano() { if (viewState.mode === '2d') { dibujar2D(); } else { dibujar3D(); } }
-    function dibujar2D() { if (!canvas) return; const ctx = canvas.getContext('2d'); const largo = parseInt(document.getElementById('inputLargo').value) || 5; const ancho = anchoFijo; ctx.clearRect(0, 0, canvas.width, canvas.height); const cx = (canvas.width / 2) + viewState.offsetX; const cy = (canvas.height / 2) + viewState.offsetY; const scale = viewState.scale; const rectW = ancho * scale; const rectH = largo * scale; const startX = cx - (rectW / 2); const startY = cy - (rectH / 2); ctx.beginPath(); ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1; for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * scale), startY, 0, rectH); for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * scale), rectW, 0); ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2; ctx.fillStyle = "rgba(14, 76, 129, 0.1)"; ctx.fillRect(startX, startY, rectW, rectH); ctx.strokeRect(startX, startY, rectW, rectH); ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center"; ctx.fillText(`${ancho}m`, cx, startY - 10); ctx.save(); ctx.translate(startX - 15, cy); ctx.rotate(-Math.PI / 2); ctx.fillText(`${largo}m`, 0, 0); ctx.restore(); }
-    function dibujar3D() { if (!canvas) return; const ctx = canvas.getContext('2d'); const largo = parseInt(document.getElementById('inputLargo').value) || 5; const ancho = anchoFijo; const alturaPoste = 3.5; const alturaCumbrera = 1.5; ctx.clearRect(0, 0, canvas.width, canvas.height); const cx = (canvas.width / 2) + viewState.offsetX; const cy = (canvas.height * 0.6) + viewState.offsetY; const scale = viewState.scale; function toIso(x, y, z) { return { x: cx + (x - y) * scale, y: cy + (x + y) * scale * 0.5 - (z * scale) }; } let numSecciones = Math.max(1, Math.round(largo / 5)); if (largo <= 5) numSecciones = 1; let paso = largo / numSecciones; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.beginPath(); ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 1; let p0 = toIso(0,0,0); let p1 = toIso(ancho,0,0); let p2 = toIso(ancho,largo,0); let p3 = toIso(0,largo,0); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath(); ctx.stroke(); for (let i = 0; i <= numSecciones; i++) { let yActual = i * paso; let baseIzq = toIso(0, yActual, 0); let topIzq = toIso(0, yActual, alturaPoste); let baseDer = toIso(ancho, yActual, 0); let topDer = toIso(ancho, yActual, alturaPoste); let cumbrera = toIso(ancho/2, yActual, alturaPoste + alturaCumbrera); ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(baseIzq.x, baseIzq.y); ctx.lineTo(topIzq.x, topIzq.y); ctx.moveTo(baseDer.x, baseDer.y); ctx.lineTo(topDer.x, topDer.y); ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.lineTo(topDer.x, topDer.y); ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y); ctx.stroke(); ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.beginPath(); let centroViga = toIso(ancho/2, yActual, alturaPoste); ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.stroke(); } ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.beginPath(); let cumbInicio = toIso(ancho/2, 0, alturaPoste + alturaCumbrera); let cumbFin = toIso(ancho/2, largo, alturaPoste + alturaCumbrera); ctx.moveTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); let aleroIzqIni = toIso(0, 0, alturaPoste); let aleroIzqFin = toIso(0, largo, alturaPoste); ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); let aleroDerIni = toIso(ancho, 0, alturaPoste); let aleroDerFin = toIso(ancho, largo, alturaPoste); ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.stroke(); ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; ctx.beginPath(); ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill(); ctx.beginPath(); ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill(); ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.lineWidth = 1; let ac1 = toIso(ancho, -1, 0); let ac2 = toIso(0, -1, 0); ctx.beginPath(); ctx.moveTo(ac1.x, ac1.y); ctx.lineTo(ac2.x, ac2.y); ctx.stroke(); ctx.fillText(`${ancho}m`, (ac1.x+ac2.x)/2 - 10, (ac1.y+ac2.y)/2); let lc1 = toIso(-1, 0, 0); let lc2 = toIso(-1, largo, 0); ctx.beginPath(); ctx.moveTo(lc1.x, lc1.y); ctx.lineTo(lc2.x, lc2.y); ctx.stroke(); ctx.fillText(`${largo}m`, (lc1.x+lc2.x)/2 - 10, (lc1.y+lc2.y)/2); }
-
-    function cambiarImagen(src, elemento) {
-        document.getElementById('imgPrincipal').src = src;
-        document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('border-primary'));
-        elemento.classList.add('border-primary');
-    }
-
-    function prepararAgregar(id, nombre, precio) {
-        tempProducto = { id, nombre, precio };
-        document.getElementById('lblProductoSeleccionado').innerText = nombre;
-        document.getElementById('inputCantidadModal').value = 1;
-        modalCantidadBootstrap.show();
-    }
-
-    function confirmarAgregar() {
-        let cant = parseInt(document.getElementById('inputCantidadModal').value);
-        if (cant < 1) return;
-        agregarAlCarrito(tempProducto, cant);
-        modalCantidadBootstrap.hide();
+    // HELPER PARA GENERAR CIRCULITOS
+    function generarPaleta(containerId, inputId) {
+        const container = document.getElementById(containerId);
+        if(!container) return; 
+        coloresManteleria.forEach(col => {
+            const div = document.createElement('div');
+            div.className = 'color-swatch' + (col.white ? ' white-color' : '');
+            div.style.backgroundColor = col.hex;
+            div.onclick = function() {
+                container.querySelectorAll('.color-swatch').forEach(c => c.classList.remove('active'));
+                div.classList.add('active');
+                const input = document.getElementById(inputId);
+                if(input) input.value = col.nombre;
+                if(inputId === 'colorSimple') {
+                    const lbl = document.getElementById('nombreColorSel');
+                    if(lbl) lbl.innerText = "Seleccionado: " + col.nombre;
+                }
+            };
+            container.appendChild(div);
+        });
     }
 
     function agregarDesdeDetalle() {
-        let itemParaCarrito = {};
-        
+        let item = {
+            id: currentProductoId,
+            nombre: currentProductoNombre,
+            precio: currentProductoPrecio,
+            cant: 1
+        };
+
         if (esCarpaModular) {
-            const largo = parseInt(document.getElementById('inputLargo').value);
+             const largo = parseInt(document.getElementById('inputLargo').value);
             const ancho = anchoFijo;
-            const area = largo * ancho;
-            itemParaCarrito = {
-                id: currentProductoId,
-                nombre: `${currentProductoNombre} (${ancho}x${largo}m)`,
-                precio: currentProductoPrecio, 
-                cant: area, 
-                esModular: true
-            };
-        } else {
-            const cant = parseInt(document.getElementById('inputCantidadDetalle').value);
+            item.nombre = `${currentProductoNombre} (${ancho}x${largo}m)`;
+            item.cant = largo * ancho;
+            item.esModular = true;
+
+        } else if (currentProductoNombre.toLowerCase().includes("vestida")) {
+            const cubreInput = document.getElementById('colorCubre');
+            const monoInput = document.getElementById('colorMono');
             
-            // VALIDAR COLOR SI ES MANTELERÍA
-            if (esManteleria) {
-                const color = document.getElementById('inputColorSeleccionado').value;
-                if (!color) {
-                    alert("⚠️ Por favor selecciona un color.");
-                    return;
-                }
-                itemParaCarrito = {
-                    id: currentProductoId,
-                    nombre: currentProductoNombre,
-                    precio: currentProductoPrecio,
-                    cant: cant,
-                    color: color // GUARDAMOS EL COLOR
-                };
-            } else {
-                itemParaCarrito = {
-                    id: currentProductoId,
-                    nombre: currentProductoNombre,
-                    precio: currentProductoPrecio,
-                    cant: cant
-                };
-            }
+            const cubre = cubreInput ? cubreInput.value : '';
+            const mono = monoInput ? monoInput.value : '';
+            const cantidad = parseInt(document.getElementById('inputCantidadDetalle').value);
+
+            if (!cubre || !mono) { alert("⚠️ Elige el color de Cubre y Moño."); return; }
+            
+            item.cant = cantidad;
+            item.esPaquete = true;
+            item.detallesPaquete = { cubre: cubre, mono: mono }; 
+
+        } else if (document.getElementById('colorSimple') && document.getElementById('panelColores').style.display !== 'none') {
+            const colInput = document.getElementById('colorSimple');
+            const col = colInput ? colInput.value : '';
+            const cantidad = parseInt(document.getElementById('inputCantidadDetalle').value);
+            if (!col) { alert("⚠️ Elige un color."); return; }
+            item.cant = cantidad;
+            item.color = col;
+        } else {
+            item.cant = parseInt(document.getElementById('inputCantidadDetalle').value);
         }
-        
-        let exist = carrito.find(i => i.nombre === itemParaCarrito.nombre && i.color === itemParaCarrito.color);
-        if (exist) exist.cant += itemParaCarrito.cant;
-        else carrito.push(itemParaCarrito);
-        
+
+        agregarAlCarritoFinal(item);
+    }
+
+    function agregarAlCarritoFinal(newItem) {
+        let exist = carrito.find(i => 
+            i.id === newItem.id && 
+            JSON.stringify(i.detallesPaquete) === JSON.stringify(newItem.detallesPaquete) &&
+            i.color === newItem.color
+        );
+
+        if (exist) exist.cant += newItem.cant;
+        else carrito.push(newItem);
+
         guardar();
         modalDetallesBootstrap.hide();
         const btnCart = document.querySelector('button[data-bs-target="#modalCarrito"]');
@@ -866,7 +913,6 @@ if ($cat_id) {
     }
 
     function agregarAlCarrito(producto, cantidad) {
-        // En agregar rápido no hay color (mantelería no tiene btn rápido)
         let exist = carrito.find(i => i.id == producto.id);
         if (exist) exist.cant += cantidad; 
         else carrito.push({ ...producto, cant: cantidad });
@@ -890,16 +936,24 @@ if ($cat_id) {
         
         carrito.forEach((item, index) => {
             total += item.precio * item.cant;
-            let unidad = item.esModular ? "m²" : "";
-            // MOSTRAR COLOR EN CARRITO
-            let detalleColor = item.color ? `<div class="text-primary small fst-italic"><i class="bi bi-palette-fill me-1"></i>${item.color}</div>` : "";
             
+            let extraInfo = "";
+            if (item.esModular) extraInfo = "m²";
+            if (item.color) extraInfo += ` <span class='badge bg-light text-dark border'>${item.color}</span>`;
+            
+            if (item.detallesPaquete) {
+                extraInfo += `<br><small class="text-muted fst-italic">
+                    • Cubre: ${item.detallesPaquete.cubre}<br>
+                    • Moño: ${item.detallesPaquete.mono}
+                </small>`;
+            }
+
             lista.innerHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                     <div class="lh-1">
                         <span class="fw-bold text-dark small">${item.nombre}</span><br>
-                        ${detalleColor}
-                        <span class="text-muted" style="font-size:0.8rem">$${item.precio.toFixed(2)} x ${item.cant} ${unidad}</span>
+                        ${extraInfo}
+                        <span class="text-muted" style="font-size:0.8rem">$${item.precio.toFixed(2)} x ${item.cant} ${item.esModular ? 'm²' : ''}</span>
                     </div>
                     <button class="btn btn-sm text-danger" onclick="eliminar(${index})"><i class="bi bi-trash"></i></button>
                 </li>`;
@@ -910,7 +964,6 @@ if ($cat_id) {
     }
 
     async function enviarPedido(tipo) {
-        // ... (CÓDIGO IGUAL QUE V22) ...
         const c = document.getElementById('cliente').value;
         const e = document.getElementById('email').value;
         const f = document.getElementById('fecha').value;

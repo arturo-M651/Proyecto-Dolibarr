@@ -1,7 +1,7 @@
 <?php
 /**
- * PROCESAR_PEDIDO.PHP - V20 (CON REINTENTOS AUTOMÁTICOS PARA PDF)
- * Soluciona el error 202/404 esperando a que Dolibarr termine de crear el archivo.
+ * PROCESAR_PEDIDO.PHP - V25 (EXPLOSIÓN DE PAQUETES/KITS + PDF REINTENTOS)
+ * Incluye: Desglose de insumos (sillas, moños, etc.) y selectores de color.
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -35,7 +35,7 @@ function callAPI($method, $url, $data = false) {
             "Accept: application/json"
         ],
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT => 30 // Aumentamos timeout por seguridad
+        CURLOPT_TIMEOUT => 30 // Timeout amplio por seguridad
     ];
     
     if ($method != "GET") {
@@ -48,9 +48,25 @@ function callAPI($method, $url, $data = false) {
     $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
     
-    // Devolvemos tanto el código como la respuesta para manejar el 202
     return ['code' => $http_code, 'response' => json_decode($result, true)];
 }
+
+// --- DEFINICIÓN DE RECETAS (KITS VIRTUALES) ---
+// Define aquí qué incluye cada paquete para el desglose automático
+$recetas = [
+    'vestida' => [ // Si el nombre del producto incluye "vestida"
+        ['desc' => 'Mesa (Base)', 'qty' => 1],
+        ['desc' => 'Sillas', 'qty' => 10],
+        ['desc' => 'Mantel Blanco', 'qty' => 1],
+        ['desc' => 'Cubre Mantel', 'qty' => 1, 'usa_color' => 'cubre'], // Usa el color seleccionado en frontend
+        ['desc' => 'Moños', 'qty' => 10, 'usa_color' => 'mono']       // Usa el color seleccionado en frontend
+    ],
+    'sencilla' => [ // Si el nombre incluye "sencilla"
+        ['desc' => 'Mesa (Base)', 'qty' => 1],
+        ['desc' => 'Sillas Plástico', 'qty' => 10],
+        ['desc' => 'Mantel Blanco', 'qty' => 1]
+    ]
+];
 
 // --- 4. INPUT ---
 $input = json_decode(file_get_contents('php://input'), true);
@@ -69,7 +85,7 @@ $filtro_email = urlencode("t.email:like:'" . $email_cliente . "'");
 $call_busqueda = callAPI('GET', $api_url . "/thirdparties?sqlfilters=($filtro_email)");
 $busqueda = $call_busqueda['response'];
 
-// Dirección extendida para el PDF
+// Dirección extendida
 $direccion_extendida  = $input['direccion'];
 $direccion_extendida .= "\nTel: " . $input['telefono'];
 $direccion_extendida .= "\nEmail: " . $input['email'];
@@ -109,7 +125,7 @@ $datos_doc = [
     'socid' => $socid, 
     'date' => time(), 
     'date_livraison' => $fecha_entrega,
-    'note_public' => "📅 Fecha del Evento: " . $input['fecha']
+    'note_public' => "Fecha del Evento: " . $input['fecha']
 ];
 
 if ($tipo_accion === 'pedido') {
@@ -125,10 +141,15 @@ $res_doc = $call_doc['response'];
 if (!isset($res_doc) || isset($res_doc['error'])) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error creando Doc.']); exit; }
 $id_documento = is_numeric($res_doc) ? $res_doc : $res_doc['id'];
 
-// --- 7. LÍNEAS ---
+// --- 7. LÍNEAS (LÓGICA MEJORADA CON PAQUETES) ---
 $endpoint_lineas = ($tipo_accion === 'pedido') ? "/orders/$id_documento/lines" : "/proposals/$id_documento/lines";
 
 foreach ($input['items'] as $item) {
+    
+    // A. PREPARAR LÍNEA PRINCIPAL (LA QUE SE COBRA)
+    $descripcion_extra = "";
+    
+    // Lógica Carpas (m2)
     $es_modular = (isset($item['esModular']) && $item['esModular'] == true);
     if (!$es_modular) {
         $keywords = ['carpa', 'toldo', 'lona', 'ancho', 'estructura'];
@@ -136,13 +157,22 @@ foreach ($input['items'] as $item) {
             if (stripos($item['nombre'], $kw) !== false) { $es_modular = true; break; }
         }
     }
-
-    $descripcion_extra = "";
     if ($es_modular) {
-        $descripcion_extra = "\n\n--- DETALLE TÉCNICO ---\nProducto Modular/Estructural.\nPrecio calculado por Metros Cuadrados (m²).\nÁrea Total: " . $item['cant'] . " m².";
+        $descripcion_extra .= "\n\n--- DETALLE TÉCNICO ---\nProducto Modular.\nPrecio calculado por Metros Cuadrados (m²).\nÁrea Total: " . $item['cant'] . " m².";
     }
 
-    $linea = [
+    // Lógica Color Simple (Mantelería suelta)
+    if (isset($item['color']) && !empty($item['color'])) {
+        $descripcion_extra .= "\nColor seleccionado: " . $item['color'];
+    }
+
+    // Lógica Paquete (Informativo en la línea principal)
+    if (isset($item['detallesPaquete'])) {
+        $descripcion_extra .= "\nConfiguración: " . $item['detallesPaquete']['cubre'] . " (Cubre) / " . $item['detallesPaquete']['mono'] . " (Moño)";
+    }
+
+    // Enviar Línea Principal
+    $linea_principal = [
         'fk_product' => (int)$item['id'], 
         'qty' => (double)$item['cant'],
         'subprice' => (double)$item['precio'], 
@@ -150,8 +180,44 @@ foreach ($input['items'] as $item) {
         'tva_tx' => defined('IVA_TASA') ? IVA_TASA : 16,
         'product_type' => 0
     ];
-    $payload = ($tipo_accion === 'pedido') ? $linea : [$linea];
-    callAPI('POST', $api_url . $endpoint_lineas, $payload);
+    callAPI('POST', $api_url . $endpoint_lineas, $linea_principal);
+
+    // B. EXPLOSIÓN DE INSUMOS (ITEMS INCLUIDOS PRECIO $0)
+    $nombre_lower = strtolower($item['nombre']);
+    
+    foreach ($recetas as $clave => $ingredientes) {
+        if (strpos($nombre_lower, $clave) !== false) {
+            
+            // ¡Receta encontrada! Agregamos los componentes
+            foreach ($ingredientes as $ingrediente) {
+                
+                $descripcion_insumo = "Incluye: " . $ingrediente['desc'];
+                
+                // Inyectar color específico del componente si la receta lo pide
+                if (isset($ingrediente['usa_color']) && isset($item['detallesPaquete'])) {
+                    $tipo_color = $ingrediente['usa_color']; // 'cubre' o 'mono'
+                    if (isset($item['detallesPaquete'][$tipo_color])) {
+                        $descripcion_insumo .= " (" . $item['detallesPaquete'][$tipo_color] . ")";
+                    }
+                }
+
+                // Cantidad total = Cantidad de paquetes * Cantidad por paquete
+                $cantidad_total = $item['cant'] * $ingrediente['qty'];
+
+                $linea_insumo = [
+                    'fk_product' => 0, // 0 = Producto libre (sin ID vinculado, o pon el ID real si lo tienes)
+                    'qty' => (double)$cantidad_total,
+                    'subprice' => 0, // PRECIO CERO (Incluido)
+                    'desc' => $descripcion_insumo,
+                    'tva_tx' => 0,
+                    'product_type' => 0
+                ];
+                
+                callAPI('POST', $api_url . $endpoint_lineas, $linea_insumo);
+            }
+            break; // Solo aplicamos una receta por producto
+        }
+    }
 }
 
 // --- 8. VALIDAR ---
@@ -179,25 +245,23 @@ $file_path   = $ref_doc . "/" . $ref_doc . ".pdf";
 $build_data = ["modulepart" => $modulo_part, "original_file" => $file_path, "doctemplate" => $modelo_pdf, "langcode" => "es_MX"];
 callAPI('PUT', $api_url . "/documents/builddoc", $build_data);
 
-// --- 11. DESCARGA CON REINTENTOS (LA SOLUCIÓN AL ERROR 202) ---
+// --- 11. DESCARGA CON REINTENTOS (FIX 202/404) ---
 $pdf_content = null;
 $intentos = 0;
-$max_intentos = 3; // Intentaremos 3 veces
+$max_intentos = 3; 
 $url_descarga_api = $api_url . "/documents/download?modulepart=" . $modulo_part . "&original_file=" . urlencode($file_path);
 
 while ($intentos < $max_intentos) {
-    sleep(2); // Esperamos 2 segundos antes de cada intento
+    sleep(2); // Esperamos 2 segundos
     
     $call_descarga = callAPI('GET', $url_descarga_api);
     $res_descarga = $call_descarga['response'];
     $http_code = $call_descarga['code'];
 
-    // Si es exitoso (200) y tiene contenido, salimos del bucle
     if ($http_code == 200 && isset($res_descarga['content'])) {
         $pdf_content = base64_decode($res_descarga['content']);
         break; 
     }
-    // Si no, seguimos intentando...
     $intentos++;
 }
 
@@ -215,14 +279,13 @@ try {
         $mail->setFrom(SMTP_USER, 'Carpas Montes');
         $mail->addAddress($input['email'], $input['cliente']); 
 
-        // Solo adjuntamos si logramos descargar el PDF
         if ($pdf_content) {
             $mail->addStringAttachment($pdf_content, $ref_doc . ".pdf");
         }
 
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
-        $mail->Subject = 'Carpas Montes: Documento ' . $ref_doc;
+        $mail->Subject = 'Pedido ' . $ref_doc;
         
         $mensaje_html = "<div style='font-family: Arial; padding: 20px;'><h2 style='color: #0e4c81;'>Gracias por tu preferencia</h2><p>Hola {$input['cliente']}, adjunto encontrarás tu documento <strong>$ref_doc</strong>.</p>";
         
@@ -240,8 +303,6 @@ try {
 
 ob_end_clean();
 
-// Respondemos al frontend (que abrirá ver_pdf.php)
-// Como ya esperamos aquí, es muy probable que ver_pdf.php también funcione a la primera.
 echo json_encode([
     'success' => true, 
     'ref' => $ref_doc,
