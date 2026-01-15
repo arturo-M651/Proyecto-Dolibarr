@@ -1,7 +1,0 @@
---- NUEVA PETICIÓN CORREGIDA ---
-[05:26:20] Presupuesto ID: 14
-[05:26:20] Enviando línea envuelta en array []...
-[05:26:20] RESPUESTA (http://localhost/dolibarr/htdocs/api/index.php/proposals/14/lines): <br />
-<b>Warning</b>:  Undefined property: stdClass::$localtax1_tx in <b>C:\xampp\htdocs\dolibarr\htdocs\comm\propal\class\api_proposals.class.php</b> on line <b>457</b><br />
-<br />
-<b>Warning</b>:  Undefined property: stdClass::$localtax2_tx in <b>C:\xampp\htdocs\dolibarr\htdocs\comm\propal\class...
