@@ -1,8 +1,7 @@
 <?php
 /**
  * ==============================================================================
- * PRUEBA_API.PHP - V28 (FINAL BLINDADO: DATA-ATTRIBUTES + MANTELERÍA V2)
- * Solución definitiva a botones bloqueados y conflictos de JS.
+ * PRUEBA_API.PHP - V23 (FINAL: INTERRUPTOR MOBILIARIO PAQUETE/UNIDAD)
  * ==============================================================================
  */
 
@@ -119,25 +118,6 @@ if ($cat_id) {
             box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
 
-        /* ESTILOS PALETA DE COLORES */
-        .color-swatch {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-            position: relative;
-        }
-        .color-swatch:hover { transform: scale(1.1); }
-        .color-swatch.active {
-            border: 2px solid #0e4c81; /* Borde Azul al seleccionar */
-            transform: scale(1.2);
-            box-shadow: 0 0 0 2px #fff, 0 4px 8px rgba(0,0,0,0.3);
-        }
-        .color-swatch.white-color { border: 1px solid #ddd; } 
-
         /* Simulador 3D */
         #contenedorCanvas {
             position: relative;
@@ -150,12 +130,14 @@ if ($cat_id) {
             overflow: hidden;
             touch-action: none; 
         }
+        
         canvas#canvasPlano {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
             cursor: grab; touch-action: none; 
         }
         canvas#canvasPlano:active { cursor: grabbing; }
+
         .canvas-controls {
             position: absolute; bottom: 20px; right: 20px;
             display: flex; flex-direction: column; gap: 8px; z-index: 10;
@@ -167,6 +149,7 @@ if ($cat_id) {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             color: #333; transition: all 0.2s; font-size: 1.2rem;
         }
+        
         .view-switch {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: white; padding: 4px; border-radius: 30px;
@@ -179,6 +162,7 @@ if ($cat_id) {
         .view-btn.active {
             background: #0e4c81; color: white; box-shadow: 0 2px 5px rgba(14, 76, 129, 0.3);
         }
+
         .info-legend {
             position: absolute;
             bottom: 20px; 
@@ -293,19 +277,28 @@ if ($cat_id) {
                 <div class="col-12 col-md-4">
                     <div class="benefit-card d-flex align-items-center p-3 h-100">
                         <div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div>
-                        <div><h5 class="fw-bold mb-1">Puntualidad</h5><p class="text-muted small mb-0">Montaje listo a tiempo.</p></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Puntualidad</h5>
+                            <p class="text-muted small mb-0">Montaje listo a tiempo.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="benefit-card d-flex align-items-center p-3 h-100">
                         <div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div>
-                        <div><h5 class="fw-bold mb-1">Limpieza Total</h5><p class="text-muted small mb-0">Mobiliario impecable.</p></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Limpieza Total</h5>
+                            <p class="text-muted small mb-0">Mobiliario impecable.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="benefit-card d-flex align-items-center p-3 h-100">
                         <div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div>
-                        <div><h5 class="fw-bold mb-1">Seguridad</h5><p class="text-muted small mb-0">Instalación profesional.</p></div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Seguridad</h5>
+                            <p class="text-muted small mb-0">Instalación profesional.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -361,24 +354,31 @@ if ($cat_id) {
                 foreach ($productos as $producto) {
                     $id = $producto['id'];
                     $ref = $producto['ref'];
-                    $label = $producto['label']; 
+                    $label = addslashes($producto['label']); 
                     $price = (float)$producto['price']; 
-                    $desc = isset($producto['description']) ? str_replace(["\r", "\n"], " ", $producto['description']) : '';
+                    $desc = isset($producto['description']) ? addslashes(str_replace(["\r", "\n"], " ", $producto['description'])) : '';
                     $img_name = isset($producto['last_main_doc']) ? $producto['last_main_doc'] : $ref . ".jpg";
                     $img_src = "imagen.php?ref=" . $ref . "&file=" . $img_name;
 
-                    // Detección Modular
+                    // --- DETECCIÓN: ¿ES CARPA? ---
                     $es_modular = false;
                     $keywords_modular = ['carpa', 'toldo', 'ancho', 'estructura'];
                     foreach ($keywords_modular as $kw) {
-                        if (stripos($label, $kw) !== false) { $es_modular = true; break; }
+                        if (stripos($label, $kw) !== false) {
+                            $es_modular = true;
+                            break;
+                        }
                     }
 
-                    // Detección Paquete Mobiliario
+                    // --- DETECCIÓN: ¿ES PAQUETE DE MOBILIARIO? ---
                     $es_paquete = false;
+                    // Palabras clave para detectar si es un paquete armado
                     $keywords_paquete = ['sencilla', 'vestida', 'paquete', 'juego', 'tablon con', 'mesa con', 'sala', 'periquera'];
                     foreach ($keywords_paquete as $kw) {
-                        if (stripos($label, $kw) !== false) { $es_paquete = true; break; }
+                        if (stripos($label, $kw) !== false) {
+                            $es_paquete = true;
+                            break;
+                        }
                     }
             ?>
                 <div class="col-6 col-md-4 col-lg-3 item-producto" 
@@ -387,16 +387,8 @@ if ($cat_id) {
                      data-aos="zoom-in">
                      
                     <div class="product-card shadow-sm bg-white rounded-4 border-0 h-100 d-flex flex-column">
-                        
                         <div class="product-img-wrapper position-relative cursor-pointer" style="height: 220px; overflow: hidden;"
-                             data-ref="<?php echo $ref; ?>"
-                             data-nombre="<?php echo htmlspecialchars($label); ?>"
-                             data-desc="<?php echo htmlspecialchars($desc); ?>"
-                             data-precio="<?php echo $price; ?>"
-                             data-img="<?php echo $img_src; ?>"
-                             data-id="<?php echo $id; ?>"
-                             onclick="verDetalles(this)">
-                             
+                             onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
                             <img src="<?php echo $img_src; ?>" class="w-100 h-100 object-fit-cover" onerror="this.src='https://placehold.co/300x300/f8fafc/0e4c81?text=Sin+Foto'">
                             
                             <span class="position-absolute bottom-0 end-0 m-2 badge bg-white text-dark shadow fw-bold border border-warning price-badge" style="font-size: 0.8rem;">
@@ -410,20 +402,13 @@ if ($cat_id) {
                             <h6 class="fw-bold text-dark mb-1 text-truncate"><?php echo $label; ?></h6>
                             <small class="text-muted mb-3 small product-desc-clamp"><?php echo strip_tags($desc); ?></small>
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
-                                
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
-                                    data-ref="<?php echo $ref; ?>"
-                                    data-nombre="<?php echo htmlspecialchars($label); ?>"
-                                    data-desc="<?php echo htmlspecialchars($desc); ?>"
-                                    data-precio="<?php echo $price; ?>"
-                                    data-img="<?php echo $img_src; ?>"
-                                    data-id="<?php echo $id; ?>"
-                                    onclick="verDetalles(this)">
+                                    onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
                                     <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
                                 </button>
                                 
                                 <?php if (!$es_modular): ?>
-                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo htmlspecialchars($label); ?>', <?php echo $price; ?>)">
+                                <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
                                     <i class="bi bi-plus-lg"></i>
                                 </button>
                                 <?php endif; ?>
@@ -591,14 +576,8 @@ if ($cat_id) {
                             <h3 class="text-gold fw-bold mb-3" id="detallePrecio"></h3>
                             <div class="mb-4 flex-grow-1">
                                 <h6 class="fw-bold small text-dark mb-1">Descripción:</h6>
-                                <p class="text-muted small lh-sm" id="detalleDesc" style="max-height: 150px; overflow-y: auto;"></p>
+                                <p class="text-muted small lh-sm" id="detalleDesc" style="max-height: 250px; overflow-y: auto;"></p>
                             </div>
-                            
-                            <div id="panelColores" class="mb-3" style="display:none;">
-                                <div id="contenedorColores"></div>
-                                <div id="nombreColorSel" class="small text-muted mt-1 fst-italic"></div>
-                            </div>
-
                             <div class="mt-auto pt-3 border-top">
                                 <div id="panelMedidas" class="mb-3 p-3 bg-light rounded-3 border" style="display:none;">
                                     <div class="row g-2 align-items-center">
@@ -639,45 +618,42 @@ if ($cat_id) {
 <script>
     AOS.init({ once: true, disable: 'mobile' });
     
-    // --- COLORES MANTELERÍA ---
-    const coloresManteleria = [
-        {nombre: 'Blanco', hex: '#FFFFFF', white: true},
-        {nombre: 'Negro', hex: '#000000'},
-        {nombre: 'Rojo', hex: '#E53935'},
-        {nombre: 'Azul Rey', hex: '#1E88E5'},
-        {nombre: 'Azul Cielo', hex: '#4FC3F7'},
-        {nombre: 'Rosa Pastel', hex: '#F8BBD0'},
-        {nombre: 'Fucsia', hex: '#D81B60'},
-        {nombre: 'Verde Bandera', hex: '#2E7D32'},
-        {nombre: 'Verde Limón', hex: '#C6FF00'},
-        {nombre: 'Amarillo', hex: '#FFEA00'},
-        {nombre: 'Naranja', hex: '#FF9800'},
-        {nombre: 'Morado', hex: '#7B1FA2'},
-        {nombre: 'Lila', hex: '#E1BEE7'},
-        {nombre: 'Oro', hex: '#FFD700'},
-        {nombre: 'Plata', hex: '#C0C0C0'}
-    ];
-
     // --- LÓGICA DE FILTRADO MOBILIARIO ---
     function filtrarMobiliario(modo) {
+        // Actualizar botones
         const btns = document.querySelectorAll('.mode-btn');
         btns.forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
+        
+        // Mover el slider azul
         const slider = document.getElementById('modeSlider');
         slider.style.transform = (modo === 'paquete') ? 'translateX(100%)' : 'translateX(0)';
+        
+        // Filtrar productos
         const productos = document.querySelectorAll('.item-producto');
+        let visibles = 0;
+        
         productos.forEach(prod => {
             const tipo = prod.getAttribute('data-tipo');
             if (tipo === modo) {
                 prod.style.display = 'block';
+                // Reiniciar animación para que se vea bonito
                 prod.classList.remove('aos-animate');
                 setTimeout(() => prod.classList.add('aos-animate'), 50);
+                visibles++;
             } else {
                 prod.style.display = 'none';
             }
         });
+        
+        // Si no hay productos, mostrar mensaje (opcional)
+        const contenedor = document.getElementById('contenedorProductos');
+        if(visibles === 0) {
+            // Podrías mostrar un mensaje de "No hay paquetes disponibles"
+        }
     }
 
+    // Inicialización del resto del sistema...
     let carrito = JSON.parse(localStorage.getItem('carrito_v2')) || [];
     let tempProducto = null; 
     let currentProductoId = null;
@@ -685,18 +661,22 @@ if ($cat_id) {
     let currentProductoPrecio = 0;
     
     let esCarpaModular = false;
-    let esManteleria = false; 
     let anchoFijo = 0;
     
-    let viewState = { mode: '2d', scale: 20, offsetX: 0, offsetY: 0, isDragging: false, lastX: 0, lastY: 0, lastPinchDist: 0 };
+    let viewState = {
+        mode: '2d', scale: 20, offsetX: 0, offsetY: 0, 
+        isDragging: false, lastX: 0, lastY: 0, lastPinchDist: 0 
+    };
 
     const modalCantidadBootstrap = new bootstrap.Modal(document.getElementById('modalCantidad'));
     const modalDetallesBootstrap = new bootstrap.Modal(document.getElementById('modalDetalles'));
     const modalCarritoBootstrap = new bootstrap.Modal(document.getElementById('modalCarrito'));
 
+    // Al cargar, si hay switch, filtrar por defecto a 'unidad'
     document.addEventListener('DOMContentLoaded', () => {
         if(document.querySelector('.mode-switch')) {
             filtrarMobiliario('unidad'); 
+            // Forzamos visualmente el botón activo correcto por si acaso
             document.querySelector('.mode-btn').classList.add('active');
         }
         renderizar();
@@ -704,32 +684,104 @@ if ($cat_id) {
 
     const canvas = document.getElementById('canvasPlano');
     const container = document.getElementById('contenedorCanvas');
+
     // --- EVENTOS MOUSE ---
-    canvas.addEventListener('mousedown', (e) => { viewState.isDragging = true; viewState.lastX = e.clientX; viewState.lastY = e.clientY; });
-    window.addEventListener('mousemove', (e) => { if (!viewState.isDragging) return; viewState.offsetX += e.clientX - viewState.lastX; viewState.offsetY += e.clientY - viewState.lastY; viewState.lastX = e.clientX; viewState.lastY = e.clientY; requestAnimationFrame(dibujarPlano); });
+    canvas.addEventListener('mousedown', (e) => { 
+        viewState.isDragging = true; 
+        viewState.lastX = e.clientX; 
+        viewState.lastY = e.clientY; 
+    });
+    window.addEventListener('mousemove', (e) => {
+        if (!viewState.isDragging) return;
+        viewState.offsetX += e.clientX - viewState.lastX;
+        viewState.offsetY += e.clientY - viewState.lastY;
+        viewState.lastX = e.clientX; 
+        viewState.lastY = e.clientY;
+        requestAnimationFrame(dibujarPlano);
+    });
     window.addEventListener('mouseup', () => viewState.isDragging = false);
-    canvas.addEventListener('wheel', (e) => { e.preventDefault(); viewState.scale *= (e.deltaY > 0 ? 0.9 : 1.1); requestAnimationFrame(dibujarPlano); });
+    
+    canvas.addEventListener('wheel', (e) => { 
+        e.preventDefault(); 
+        viewState.scale *= (e.deltaY > 0 ? 0.9 : 1.1); 
+        requestAnimationFrame(dibujarPlano); 
+    });
+    
     // --- EVENTOS TÁCTILES ---
-    canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { viewState.isDragging = true; viewState.lastX = e.touches[0].clientX; viewState.lastY = e.touches[0].clientY; } else if (e.touches.length === 2) { viewState.isDragging = false; const dx = e.touches[0].clientX - e.touches[1].clientX; const dy = e.touches[0].clientY - e.touches[1].clientY; viewState.lastPinchDist = Math.hypot(dx, dy); } });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (e.touches.length === 1 && viewState.isDragging) { viewState.offsetX += e.touches[0].clientX - viewState.lastX; viewState.offsetY += e.touches[0].clientY - viewState.lastY; viewState.lastX = e.touches[0].clientX; viewState.lastY = e.touches[0].clientY; requestAnimationFrame(dibujarPlano); } else if (e.touches.length === 2) { const dx = e.touches[0].clientX - e.touches[1].clientX; const dy = e.touches[0].clientY - e.touches[1].clientY; const currentDist = Math.hypot(dx, dy); if (viewState.lastPinchDist > 0) { const zoomFactor = currentDist / viewState.lastPinchDist; viewState.scale *= zoomFactor; if(viewState.scale < 5) viewState.scale = 5; if(viewState.scale > 100) viewState.scale = 100; } viewState.lastPinchDist = currentDist; requestAnimationFrame(dibujarPlano); } });
-    canvas.addEventListener('touchend', () => { viewState.isDragging = false; viewState.lastPinchDist = 0; });
-    const resizeObserver = new ResizeObserver(entries => { for (let entry of entries) { const { width, height } = entry.contentRect; canvas.width = width; canvas.height = height; requestAnimationFrame(dibujarPlano); } });
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+            viewState.isDragging = true;
+            viewState.lastX = e.touches[0].clientX;
+            viewState.lastY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+            viewState.isDragging = false; 
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            viewState.lastPinchDist = Math.hypot(dx, dy);
+        }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault(); 
+
+        if (e.touches.length === 1 && viewState.isDragging) {
+            viewState.offsetX += e.touches[0].clientX - viewState.lastX;
+            viewState.offsetY += e.touches[0].clientY - viewState.lastY;
+            viewState.lastX = e.touches[0].clientX;
+            viewState.lastY = e.touches[0].clientY;
+            requestAnimationFrame(dibujarPlano);
+
+        } else if (e.touches.length === 2) {
+            const dx = e.touches[0].clientX - e.touches[1].clientX;
+            const dy = e.touches[0].clientY - e.touches[1].clientY;
+            const currentDist = Math.hypot(dx, dy);
+
+            if (viewState.lastPinchDist > 0) {
+                const zoomFactor = currentDist / viewState.lastPinchDist;
+                viewState.scale *= zoomFactor;
+                if(viewState.scale < 5) viewState.scale = 5;
+                if(viewState.scale > 100) viewState.scale = 100;
+            }
+            viewState.lastPinchDist = currentDist;
+            requestAnimationFrame(dibujarPlano);
+        }
+    });
+
+    canvas.addEventListener('touchend', () => {
+        viewState.isDragging = false;
+        viewState.lastPinchDist = 0;
+    });
+
+    // --- REDIMENSIONADO ---
+    const resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const { width, height } = entry.contentRect;
+            canvas.width = width;
+            canvas.height = height;
+            requestAnimationFrame(dibujarPlano);
+        }
+    });
     resizeObserver.observe(container);
 
     const buscador = document.getElementById('buscadorJS');
-    if(buscador){ buscador.addEventListener('keyup', function(e) { const texto = e.target.value.toLowerCase(); document.querySelectorAll('.item-producto').forEach(item => { if(item.style.display !== 'none'){ const nombre = item.getAttribute('data-nombre'); item.style.display = nombre.includes(texto) ? 'block' : 'none'; } }); }); }
+    if(buscador){
+        buscador.addEventListener('keyup', function(e) {
+            const texto = e.target.value.toLowerCase();
+            document.querySelectorAll('.item-producto').forEach(item => {
+                // Solo buscamos en los elementos visibles (respetando el filtro de paquete/unidad)
+                if(item.style.display !== 'none'){
+                    const nombre = item.getAttribute('data-nombre');
+                    // Ojo: Esto podría conflictuar con el filtro. 
+                    // Lo ideal es que el buscador muestre todo si coincide, 
+                    // o solo dentro de la pestaña activa. 
+                    // Por ahora, búsqueda simple:
+                    item.style.display = nombre.includes(texto) ? 'block' : 'none';
+                }
+            });
+        });
+    }
 
-    // --- FUNCIÓN VER DETALLES V28 (FINAL: LECTURA DATA ATTRIBUTES) ---
-    async function verDetalles(elem) {
-        // Leemos desde los atributos data-* en lugar de argumentos de función
-        // Esto previene errores de sintaxis por comillas o saltos de línea
-        const ref = elem.dataset.ref;
-        const nombre = elem.dataset.nombre;
-        const desc = elem.dataset.desc;
-        const precio = parseFloat(elem.dataset.precio);
-        const imgMain = elem.dataset.img;
-        const id = parseInt(elem.dataset.id);
-
+    async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
         currentProductoId = id;
         currentProductoNombre = nombre;
         currentProductoPrecio = precio;
@@ -738,173 +790,229 @@ if ($cat_id) {
         document.getElementById('detalleDesc').innerHTML = desc || '<em class="text-muted">Sin descripción.</em>';
         document.getElementById('imgPrincipal').src = imgMain;
         document.getElementById('inputCantidadDetalle').value = 1;
-        
-        // LIMPIEZA
-        const panelColores = document.getElementById('panelColores');
-        const contColores = document.getElementById('contenedorColores');
-        const nombreColorSel = document.getElementById('nombreColorSel');
-        if(panelColores) panelColores.style.display = 'none';
-        if(contColores) contColores.innerHTML = '';
-        if(nombreColorSel) nombreColorSel.innerText = '';
-        
-        esCarpaModular = false;
-        let esPaqueteVestido = false;
-        let esManteleriaSimple = false;
 
-        // 1. CARPAS
         if (nombre.toLowerCase().includes("ancho") || nombre.toLowerCase().includes("carpa") || nombre.toLowerCase().includes("toldo")) {
             esCarpaModular = true;
             const match = nombre.match(/(\d+)/);
             anchoFijo = match ? parseInt(match[0]) : 10; 
+            
             document.getElementById('panelMedidas').style.display = 'block';
-            if(panelColores) panelColores.style.display = 'none'; 
             document.getElementById('divCantidadNormal').style.display = 'none'; 
             document.getElementById('pills-plano-tab').style.display = 'block'; 
+            
             document.getElementById('inputAncho').value = anchoFijo;
             document.getElementById('inputLargo').value = 5; 
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
+            document.getElementById('lblPrecioTotal').innerText = ""; 
             
-            // Render 3D automático después de que el modal es visible
-            setTimeout(() => {
-                setMode('2d');
-                new bootstrap.Tab(document.querySelector('#pills-plano-tab')).show();
-            }, 200);
+            setMode('2d'); 
 
-        // 2. PAQUETE MESA VESTIDA
-        } else if (nombre.toLowerCase().includes("vestida")) {
-            esPaqueteVestido = true;
-            if(panelColores) panelColores.style.display = 'block';
-            
-            if(contColores) {
-                contColores.innerHTML = `
-                    <div class="mb-3">
-                        <label class="small fw-bold d-block mb-2">1. Color Cubre Mantel:</label>
-                        <div class="d-flex flex-wrap gap-2" id="paletaCubre"></div>
-                        <input type="hidden" id="colorCubre">
-                    </div>
-                    <div class="mb-3">
-                        <label class="small fw-bold d-block mb-2">2. Color Moño/Banda:</label>
-                        <div class="d-flex flex-wrap gap-2" id="paletaMono"></div>
-                        <input type="hidden" id="colorMono">
-                    </div>
-                `;
-                generarPaleta('paletaCubre', 'colorCubre');
-                generarPaleta('paletaMono', 'colorMono');
-            }
-
-            document.getElementById('panelMedidas').style.display = 'none';
-            document.getElementById('divCantidadNormal').style.display = 'block';
-            document.getElementById('pills-plano-tab').style.display = 'none';
-            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
-
-        // 3. MANTELERÍA SIMPLE
-        } else if (['mantel', 'cubre', 'moño', 'servilleta', 'banda', 'camino'].some(kw => nombre.toLowerCase().includes(kw))) {
-            esManteleriaSimple = true;
-            if(panelColores) panelColores.style.display = 'block';
-            if(contColores) {
-                contColores.innerHTML = `
-                    <div class="d-flex flex-wrap gap-2" id="paletaSimple"></div>
-                    <input type="hidden" id="colorSimple">
-                `;
-                generarPaleta('paletaSimple', 'colorSimple');
-            }
-            
-            document.getElementById('panelMedidas').style.display = 'none';
-            document.getElementById('divCantidadNormal').style.display = 'block';
-            document.getElementById('pills-plano-tab').style.display = 'none';
-            document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
-
-        // 4. OTROS
         } else {
+            esCarpaModular = false;
             document.getElementById('panelMedidas').style.display = 'none';
-            if(panelColores) panelColores.style.display = 'none';
             document.getElementById('divCantidadNormal').style.display = 'block';
-            document.getElementById('pills-plano-tab').style.display = 'none';
+            document.getElementById('pills-plano-tab').style.display = 'none'; 
             document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
-            new bootstrap.Tab(document.querySelector('#pills-foto-tab')).show();
+            document.getElementById('lblPrecioTotal').innerText = "";
+            const tabBtn = document.querySelector('#pills-foto-tab');
+            const tab = new bootstrap.Tab(tabBtn);
+            tab.show();
         }
 
         modalDetallesBootstrap.show();
         cargarGaleria(ref, imgMain);
     }
 
-    // HELPER PARA GENERAR CIRCULITOS
-    function generarPaleta(containerId, inputId) {
-        const container = document.getElementById(containerId);
-        if(!container) return; 
-        coloresManteleria.forEach(col => {
-            const div = document.createElement('div');
-            div.className = 'color-swatch' + (col.white ? ' white-color' : '');
-            div.style.backgroundColor = col.hex;
-            div.onclick = function() {
-                container.querySelectorAll('.color-swatch').forEach(c => c.classList.remove('active'));
-                div.classList.add('active');
-                const input = document.getElementById(inputId);
-                if(input) input.value = col.nombre;
-                if(inputId === 'colorSimple') {
-                    const lbl = document.getElementById('nombreColorSel');
-                    if(lbl) lbl.innerText = "Seleccionado: " + col.nombre;
-                }
-            };
-            container.appendChild(div);
-        });
+    function init3DView() { setTimeout(() => { autoFit(); actualizarCalculosRender(); }, 100); }
+
+    async function cargarGaleria(ref, imgMain) {
+        const contenedor = document.getElementById('galeriaContenedor');
+        contenedor.innerHTML = '<div class="spinner-border spinner-border-sm text-warning mx-auto"></div>';
+        try {
+            const res = await fetch(`obtener_fotos.php?ref=${ref}&t=${Date.now()}`);
+            const fotos = await res.json();
+            contenedor.innerHTML = ''; 
+            let htmlFotos = `<img src="${imgMain}" class="thumb-img border active" style="width:60px; height:60px; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="cambiarImagen(this.src, this)">`;
+            if (fotos.length) {
+                fotos.forEach(url => {
+                    if(url !== imgMain) {
+                        htmlFotos += `<img src="${encodeURI(url)}" class="thumb-img border" style="width:60px; height:60px; object-fit:cover; border-radius:8px; cursor:pointer;" onclick="cambiarImagen(this.src, this)">`;
+                    }
+                });
+            }
+            contenedor.innerHTML = htmlFotos;
+        } catch (e) { contenedor.innerHTML = ''; }
+    }
+
+    function setMode(mode) {
+        viewState.mode = mode;
+        document.getElementById('btn2D').classList.toggle('active', mode === '2d');
+        document.getElementById('btn3D').classList.toggle('active', mode === '3d');
+        
+        // MOSTRAR/OCULTAR LEYENDAS
+        document.getElementById('info2D').style.display = (mode === '2d') ? 'flex' : 'none';
+        document.getElementById('info3D').style.display = (mode === '3d') ? 'flex' : 'none';
+        
+        autoFit(); 
+    }
+
+    function iniciarRender() { requestAnimationFrame(dibujarPlano); }
+    function resetView() { autoFit(); }
+    function ajustarZoom(factor) { viewState.scale *= factor; requestAnimationFrame(dibujarPlano); }
+
+    function autoFit() {
+        const largo = parseInt(document.getElementById('inputLargo').value) || 5;
+        const ancho = anchoFijo;
+        const factorZoom = Math.min(canvas.width / (ancho + largo), canvas.height / (ancho + largo)) * (viewState.mode === '3d' ? 18 : 35);
+        viewState.scale = Math.min(factorZoom, 50);
+        viewState.offsetX = 0;
+        viewState.offsetY = 0;
+        requestAnimationFrame(dibujarPlano);
+    }
+
+    function actualizarCalculosRender() {
+        if(!esCarpaModular) return;
+        const largo = parseInt(document.getElementById('inputLargo').value) || 0;
+        const ancho = anchoFijo;
+        const area = largo * ancho;
+        const total = currentProductoPrecio * area;
+        document.getElementById('lblPrecioTotal').innerText = `($${total.toLocaleString('es-MX')})`; 
+        document.getElementById('lblCapacidad').innerText = Math.floor(area/1.5);
+        document.getElementById('lblAreaTotal').innerText = area;
+        dibujarPlano();
+    }
+
+    function dibujarPlano() { if (viewState.mode === '2d') { dibujar2D(); } else { dibujar3D(); } }
+
+    function dibujar2D() {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const largo = parseInt(document.getElementById('inputLargo').value) || 5;
+        const ancho = anchoFijo;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = (canvas.width / 2) + viewState.offsetX;
+        const cy = (canvas.height / 2) + viewState.offsetY;
+        const scale = viewState.scale;
+        const rectW = ancho * scale; const rectH = largo * scale;
+        const startX = cx - (rectW / 2); const startY = cy - (rectH / 2);
+        
+        ctx.beginPath(); ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 1;
+        for (let i = 0; i <= ancho; i++) ctx.strokeRect(startX + (i * scale), startY, 0, rectH); 
+        for (let i = 0; i <= largo; i++) ctx.strokeRect(startX, startY + (i * scale), rectW, 0);
+        
+        ctx.strokeStyle = "#0e4c81"; ctx.lineWidth = 2; ctx.fillStyle = "rgba(14, 76, 129, 0.1)";
+        ctx.fillRect(startX, startY, rectW, rectH); ctx.strokeRect(startX, startY, rectW, rectH);
+        
+        ctx.fillStyle = "#000"; ctx.font = "bold 12px Arial"; ctx.textAlign = "center";
+        ctx.fillText(`${ancho}m`, cx, startY - 10);
+        ctx.save(); ctx.translate(startX - 15, cy); ctx.rotate(-Math.PI / 2);
+        ctx.fillText(`${largo}m`, 0, 0); ctx.restore();
+    }
+
+    function dibujar3D() {
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const largo = parseInt(document.getElementById('inputLargo').value) || 5;
+        const ancho = anchoFijo;
+        const alturaPoste = 3.5;
+        const alturaCumbrera = 1.5;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = (canvas.width / 2) + viewState.offsetX;
+        const cy = (canvas.height * 0.6) + viewState.offsetY;
+        const scale = viewState.scale;
+        function toIso(x, y, z) { return { x: cx + (x - y) * scale, y: cy + (x + y) * scale * 0.5 - (z * scale) }; }
+        
+        let numSecciones = Math.max(1, Math.round(largo / 5)); if (largo <= 5) numSecciones = 1; let paso = largo / numSecciones;
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.strokeStyle = '#e0e0e0'; ctx.lineWidth = 1;
+        let p0 = toIso(0,0,0); let p1 = toIso(ancho,0,0); let p2 = toIso(ancho,largo,0); let p3 = toIso(0,largo,0);
+        ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath(); ctx.stroke();
+
+        for (let i = 0; i <= numSecciones; i++) {
+            let yActual = i * paso;
+            let baseIzq = toIso(0, yActual, 0); let topIzq = toIso(0, yActual, alturaPoste);
+            let baseDer = toIso(ancho, yActual, 0); let topDer = toIso(ancho, yActual, alturaPoste);
+            let cumbrera = toIso(ancho/2, yActual, alturaPoste + alturaCumbrera);
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath();
+            ctx.moveTo(baseIzq.x, baseIzq.y); ctx.lineTo(topIzq.x, topIzq.y);
+            ctx.moveTo(baseDer.x, baseDer.y); ctx.lineTo(topDer.x, topDer.y);
+            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.lineTo(topDer.x, topDer.y);
+            ctx.moveTo(topIzq.x, topIzq.y); ctx.lineTo(topDer.x, topDer.y); ctx.stroke();
+            ctx.strokeStyle = '#999'; ctx.lineWidth = 1; ctx.beginPath();
+            let centroViga = toIso(ancho/2, yActual, alturaPoste);
+            ctx.moveTo(centroViga.x, centroViga.y); ctx.lineTo(cumbrera.x, cumbrera.y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; ctx.beginPath();
+        let cumbInicio = toIso(ancho/2, 0, alturaPoste + alturaCumbrera);
+        let cumbFin = toIso(ancho/2, largo, alturaPoste + alturaCumbrera);
+        ctx.moveTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y);
+        let aleroIzqIni = toIso(0, 0, alturaPoste); let aleroIzqFin = toIso(0, largo, alturaPoste);
+        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y);
+        let aleroDerIni = toIso(ancho, 0, alturaPoste); let aleroDerFin = toIso(ancho, largo, alturaPoste);
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.stroke();
+
+        ctx.fillStyle = "rgba(220, 230, 240, 0.4)"; ctx.beginPath();
+        ctx.moveTo(aleroIzqIni.x, aleroIzqIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroIzqFin.x, aleroIzqFin.y); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(aleroDerIni.x, aleroDerIni.y); ctx.lineTo(cumbInicio.x, cumbInicio.y); ctx.lineTo(cumbFin.x, cumbFin.y); ctx.lineTo(aleroDerFin.x, aleroDerFin.y); ctx.fill();
+
+        ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.font = 'bold 12px Arial'; ctx.lineWidth = 1;
+        let ac1 = toIso(ancho, -1, 0); let ac2 = toIso(0, -1, 0);
+        ctx.beginPath(); ctx.moveTo(ac1.x, ac1.y); ctx.lineTo(ac2.x, ac2.y); ctx.stroke();
+        ctx.fillText(`${ancho}m`, (ac1.x+ac2.x)/2 - 10, (ac1.y+ac2.y)/2); 
+        let lc1 = toIso(-1, 0, 0); let lc2 = toIso(-1, largo, 0);
+        ctx.beginPath(); ctx.moveTo(lc1.x, lc1.y); ctx.lineTo(lc2.x, lc2.y); ctx.stroke();
+        ctx.fillText(`${largo}m`, (lc1.x+lc2.x)/2 - 10, (lc1.y+lc2.y)/2);
+    }
+
+    function cambiarImagen(src, elemento) {
+        document.getElementById('imgPrincipal').src = src;
+        document.querySelectorAll('.thumb-img').forEach(img => img.classList.remove('border-primary'));
+        elemento.classList.add('border-primary');
+    }
+
+    function prepararAgregar(id, nombre, precio) {
+        tempProducto = { id, nombre, precio };
+        document.getElementById('lblProductoSeleccionado').innerText = nombre;
+        document.getElementById('inputCantidadModal').value = 1;
+        modalCantidadBootstrap.show();
+    }
+
+    function confirmarAgregar() {
+        let cant = parseInt(document.getElementById('inputCantidadModal').value);
+        if (cant < 1) return;
+        agregarAlCarrito(tempProducto, cant);
+        modalCantidadBootstrap.hide();
     }
 
     function agregarDesdeDetalle() {
-        let item = {
-            id: currentProductoId,
-            nombre: currentProductoNombre,
-            precio: currentProductoPrecio,
-            cant: 1
-        };
-
+        let itemParaCarrito = {};
         if (esCarpaModular) {
-             const largo = parseInt(document.getElementById('inputLargo').value);
+            const largo = parseInt(document.getElementById('inputLargo').value);
             const ancho = anchoFijo;
-            item.nombre = `${currentProductoNombre} (${ancho}x${largo}m)`;
-            item.cant = largo * ancho;
-            item.esModular = true;
-
-        } else if (currentProductoNombre.toLowerCase().includes("vestida")) {
-            const cubreInput = document.getElementById('colorCubre');
-            const monoInput = document.getElementById('colorMono');
-            
-            const cubre = cubreInput ? cubreInput.value : '';
-            const mono = monoInput ? monoInput.value : '';
-            const cantidad = parseInt(document.getElementById('inputCantidadDetalle').value);
-
-            if (!cubre || !mono) { alert("⚠️ Elige el color de Cubre y Moño."); return; }
-            
-            item.cant = cantidad;
-            item.esPaquete = true;
-            item.detallesPaquete = { cubre: cubre, mono: mono }; 
-
-        } else if (document.getElementById('colorSimple') && document.getElementById('panelColores').style.display !== 'none') {
-            const colInput = document.getElementById('colorSimple');
-            const col = colInput ? colInput.value : '';
-            const cantidad = parseInt(document.getElementById('inputCantidadDetalle').value);
-            if (!col) { alert("⚠️ Elige un color."); return; }
-            item.cant = cantidad;
-            item.color = col;
+            const area = largo * ancho;
+            itemParaCarrito = {
+                id: currentProductoId,
+                nombre: `${currentProductoNombre} (${ancho}x${largo}m)`,
+                precio: currentProductoPrecio, 
+                cant: area, 
+                esModular: true
+            };
         } else {
-            item.cant = parseInt(document.getElementById('inputCantidadDetalle').value);
+            const cant = parseInt(document.getElementById('inputCantidadDetalle').value);
+            itemParaCarrito = {
+                id: currentProductoId,
+                nombre: currentProductoNombre,
+                precio: currentProductoPrecio,
+                cant: cant
+            };
         }
-
-        agregarAlCarritoFinal(item);
-    }
-
-    function agregarAlCarritoFinal(newItem) {
-        let exist = carrito.find(i => 
-            i.id === newItem.id && 
-            JSON.stringify(i.detallesPaquete) === JSON.stringify(newItem.detallesPaquete) &&
-            i.color === newItem.color
-        );
-
-        if (exist) exist.cant += newItem.cant;
-        else carrito.push(newItem);
-
+        
+        let exist = carrito.find(i => i.nombre === itemParaCarrito.nombre);
+        if (exist) exist.cant += itemParaCarrito.cant;
+        else carrito.push(itemParaCarrito);
+        
         guardar();
         modalDetallesBootstrap.hide();
         const btnCart = document.querySelector('button[data-bs-target="#modalCarrito"]');
@@ -936,24 +1044,12 @@ if ($cat_id) {
         
         carrito.forEach((item, index) => {
             total += item.precio * item.cant;
-            
-            let extraInfo = "";
-            if (item.esModular) extraInfo = "m²";
-            if (item.color) extraInfo += ` <span class='badge bg-light text-dark border'>${item.color}</span>`;
-            
-            if (item.detallesPaquete) {
-                extraInfo += `<br><small class="text-muted fst-italic">
-                    • Cubre: ${item.detallesPaquete.cubre}<br>
-                    • Moño: ${item.detallesPaquete.mono}
-                </small>`;
-            }
-
+            let unidad = item.esModular ? "m²" : "";
             lista.innerHTML += `
                 <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                     <div class="lh-1">
                         <span class="fw-bold text-dark small">${item.nombre}</span><br>
-                        ${extraInfo}
-                        <span class="text-muted" style="font-size:0.8rem">$${item.precio.toFixed(2)} x ${item.cant} ${item.esModular ? 'm²' : ''}</span>
+                        <span class="text-muted" style="font-size:0.8rem">$${item.precio.toFixed(2)} x ${item.cant} ${unidad}</span>
                     </div>
                     <button class="btn btn-sm text-danger" onclick="eliminar(${index})"><i class="bi bi-trash"></i></button>
                 </li>`;
@@ -967,15 +1063,51 @@ if ($cat_id) {
         const c = document.getElementById('cliente').value;
         const e = document.getElementById('email').value;
         const f = document.getElementById('fecha').value;
-        if (!c || !e || !f || carrito.length === 0) { alert("Completa: Nombre, Email y Fecha."); return; }
+        
+        if (!c || !e || !f || carrito.length === 0) {
+            alert("Completa: Nombre, Email y Fecha.");
+            return;
+        }
+
         if(!confirm(`¿Generar ${tipo}?`)) return;
-        const btn = event.target; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; btn.disabled = true;
+
+        const btn = event.target;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.disabled = true;
+
         try {
-            const res = await fetch('procesar_pedido.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cliente: c, email: e, fecha: f, telefono: document.getElementById('telefono').value, direccion: document.getElementById('direccion').value, cp: document.getElementById('cp').value, ciudad: document.getElementById('ciudad').value, rfc: document.getElementById('rfc').value, items: carrito, tipo: tipo }) });
+            const res = await fetch('procesar_pedido.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    cliente: c, email: e, fecha: f,
+                    telefono: document.getElementById('telefono').value,
+                    direccion: document.getElementById('direccion').value,
+                    cp: document.getElementById('cp').value,
+                    ciudad: document.getElementById('ciudad').value,
+                    rfc: document.getElementById('rfc').value,
+                    items: carrito, tipo: tipo
+                })
+            });
             const json = await res.json();
-            if (json.success) { borrarTodo(); modalCarritoBootstrap.hide(); if(json.pdf_url) { window.open(json.pdf_url, '_blank'); } else { alert(`¡Éxito! Tu referencia es: ${json.ref}.`); } } else { alert("Error: " + json.message); }
+            
+            if (json.success) {
+                borrarTodo();
+                modalCarritoBootstrap.hide();
+                if(json.pdf_url) {
+                    // Abrir en nueva pestaña
+                    window.open(json.pdf_url, '_blank');
+                } else {
+                    alert(`¡Éxito! Tu referencia es: ${json.ref}.`);
+                }
+            } else { 
+                alert("Error: " + json.message); 
+            }
         } catch (err) { alert("Error de conexión"); } 
-        finally { btn.innerHTML = (tipo==='pedido') ? 'Pedir Ahora' : 'Solo Cotizar'; btn.disabled = false; }
+        finally { 
+            btn.innerHTML = (tipo==='pedido') ? 'Pedir Ahora' : 'Solo Cotizar';
+            btn.disabled = false; 
+        }
     }
 </script>
 </body>
