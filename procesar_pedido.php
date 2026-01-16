@@ -149,7 +149,7 @@ try {
                 <strong>⚠️ IMPORTANTE:</strong><br>
                 Esta cotización <u>NO garantiza la disponibilidad ni la entrega</u>.
                 <br><br>
-                Un asesor se pondrá en contacto contigo para confirmar detalles y agendar una visita técnica si es necesario.
+                Un asesor se pondrá en contacto contigo para confirmar detalles, citas y agendar una visita técnica si es necesario.
             </div>
             <hr>
             <small>Atte: Equipo Carpas Montes</small>

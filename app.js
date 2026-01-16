@@ -262,7 +262,7 @@ async function enviarPedido(tipo) {
             modalCarritoBootstrap.hide();
             
             // MENSAJE CLARO AL USUARIO
-            alert(`✅ ¡Solicitud Enviada!\n\nTu folio es: ${json.ref}\n\nRevisa tu correo en Spam. Un asesor te contactará para confirmar disponibilidad.`);
+            alert(`✅ ¡Solicitud Enviada!\n\nTu folio es: ${json.ref}\n\nRevisa tu correo en la seccion de Spam. Un asesor te contactará para confirmar disponibilidad.`);
             
         } else { 
             alert("Error: " + json.message); 
