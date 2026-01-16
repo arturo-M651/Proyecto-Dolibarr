@@ -177,7 +177,7 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                     foreach ($keywords_modular as $kw) { if (stripos($label, $kw) !== false) { $es_modular = true; break; } }
 
                     $es_paquete = false;
-                    $keywords_paquete = ['sencilla', 'vestida', 'paquete', 'juego', 'tablon con', 'mesa con'];
+                    $keywords_paquete = ['sencilla', 'vestida', 'paquete', 'juego', 'tablon con', 'mesa con', 'periquera', 'lunge'];
                     foreach ($keywords_paquete as $kw) { if (stripos($label, $kw) !== false) { $es_paquete = true; break; } }
             ?>
                 <div class="col-6 col-md-4 col-lg-3 item-producto" data-nombre="<?php echo strtolower($label); ?>" data-tipo="<?php echo $es_paquete ? 'paquete' : 'unidad'; ?>" data-aos="zoom-in">
@@ -196,7 +196,7 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                             <div class="mt-auto d-flex justify-content-between align-items-center gap-2">
                                 <button class="btn btn-light text-primary fw-bold btn-sm flex-grow-1" 
                                     onclick="verDetalles('<?php echo $ref; ?>', '<?php echo $label; ?>', '<?php echo $desc; ?>', <?php echo $price; ?>, '<?php echo $img_src; ?>', <?php echo $id; ?>)">
-                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Configurar' : 'Ver'; ?>
+                                    <i class="bi bi-eye"></i> <?php echo $es_modular ? 'Ver Detalles' : 'Ver'; ?>
                                 </button>
                                 <?php if (!$es_modular): ?>
                                 <button class="btn btn-gold btn-sm rounded-circle shadow-sm" onclick="prepararAgregar(<?php echo $id; ?>, '<?php echo $label; ?>', <?php echo $price; ?>)">
