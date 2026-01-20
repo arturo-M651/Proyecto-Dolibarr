@@ -1,9 +1,8 @@
 <?php
 /**
- * PROCESAR_PEDIDO.PHP - VERSIÓN "SOLO REFERENCIA"
- * 1. Crea la cotización en Dolibarr.
- * 2. La valida para obtener el folio oficial.
- * 3. Manda correo con el folio (SIN PDF).
+ * PROCESAR_PEDIDO.PHP - V58 (USO DE ID DINÁMICO)
+ * - Recibe 'typent_id' directo desde Dolibarr via Frontend.
+ * - Mantiene todas las correcciones anteriores (ID cliente, Folio, Sin PDF).
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -40,7 +39,6 @@ function callAPI($method, $url, $data = false) {
     $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
     
-    // Si devuelve 404
     if ($http_code == 404) return null;
     return json_decode($result, true);
 }
@@ -55,31 +53,53 @@ $email_cliente = $input['email'];
 $filtro_email = urlencode("t.email:like:'" . $email_cliente . "'");
 $busqueda = callAPI('GET', $api_url . "/thirdparties?sqlfilters=($filtro_email)");
 
+// RECIBIMOS EL ID DIRECTO DEL DICCIONARIO
+$typent_id  = isset($input['typent_id']) ? (int)$input['typent_id'] : 8; // Default 8 (Particular) si falla
+$tipo_label = isset($input['tipo_label']) ? $input['tipo_label'] : '';
+
 $direccion_extendida  = $input['direccion'] . "\nTel: " . $input['telefono'];
+$direccion_extendida .= "\n[Cliente: " . $tipo_label . "]";
 
 $datos_cliente = [
-    'name'        => $input['cliente'], 
-    'client'      => 2, // Prospecto
-    'code_client' => -1,
-    'email'       => $input['email'],
-    'phone'       => $input['telefono'],
-    'address'     => $direccion_extendida,
-    'zip'         => $input['cp'],
-    'town'        => $input['ciudad'],
-    'idprof1'     => $input['rfc'],
-    'country_id'  => defined('ID_PAIS_MEXICO') ? ID_PAIS_MEXICO : 154
+    'name'         => $input['cliente'], 
+    'client'       => 2, // 2 = Prospecto
+    'code_client'  => -1,
+    'email'        => $input['email'],
+    'phone'        => $input['telefono'],
+    'address'      => $direccion_extendida,
+    'zip'          => $input['cp'],
+    'town'         => $input['ciudad'],
+    'idprof1'      => $input['rfc'],
+    'typent_id'    => $typent_id, // Usamos el ID real de la API
+    'note_private' => "Registro Web.\nTipo Cliente: " . $tipo_label,
+    'country_id'   => defined('ID_PAIS_MEXICO') ? ID_PAIS_MEXICO : 154
 ];
 
 $socid = 0;
+
 if (is_array($busqueda) && count($busqueda) > 0) {
+    // Cliente existente: Actualizamos
     $socid = $busqueda[0]['id'];
     callAPI('PUT', $api_url . "/thirdparties/" . $socid, $datos_cliente);
 } else {
+    // Cliente nuevo: Creamos
     $res_cliente = callAPI('POST', $api_url . "/thirdparties", $datos_cliente);
-    $socid = (isset($res_cliente['id'])) ? $res_cliente['id'] : 0;
+    
+    // Validamos ID robustamente
+    if (is_numeric($res_cliente)) {
+        $socid = $res_cliente;
+    } elseif (is_array($res_cliente) && isset($res_cliente['id'])) {
+        $socid = $res_cliente['id'];
+    } else {
+        $socid = 0;
+    }
 }
 
-if ($socid <= 0) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error cliente.']); exit; }
+if ($socid <= 0) { 
+    ob_end_clean(); 
+    echo json_encode(['success' => false, 'message' => 'Error cliente. No se pudo crear o recuperar el ID.']); 
+    exit; 
+}
 
 // --- 2. CREAR DOCUMENTO ---
 $fecha_entrega = strtotime($input['fecha']);
@@ -88,21 +108,28 @@ $datos_doc = [
     'socid' => $socid, 
     'date' => time(), 
     'date_livraison' => $fecha_entrega,
-    'note_public' => "Fecha del Evento: " . $input['fecha'],
+    'note_public' => "📅 Fecha del Evento: " . $input['fecha'],
     'action' => 'create'
 ];
 
 $res_doc = callAPI('POST', $api_url . $endpoint_creacion, $datos_doc);
 if (!isset($res_doc) || isset($res_doc['error'])) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error creando cotización.']); exit; }
-$id_documento = is_numeric($res_doc) ? $res_doc : $res_doc['id'];
 
-// --- 3. LÍNEAS (SIMPLE) ---
+$id_documento = 0;
+if (is_numeric($res_doc)) {
+    $id_documento = $res_doc;
+} elseif (is_array($res_doc) && isset($res_doc['id'])) {
+    $id_documento = $res_doc['id'];
+}
+
+if ($id_documento <= 0) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error ID documento inválido.']); exit; }
+
+// --- 3. LÍNEAS ---
 $endpoint_lineas = "/proposals/$id_documento/lines";
 foreach ($input['items'] as $item) {
     $desc = (string)$item['nombre'];
     if (isset($item['esModular']) && $item['esModular']) $desc .= "\n(Medida: " . $item['cant'] . " m²)";
     
-    // Enviamos como array (truco V2.8 que funciona)
     $payload = [[
         'fk_product' => (int)$item['id'], 
         'qty' => (double)$item['cant'],
@@ -114,16 +141,14 @@ foreach ($input['items'] as $item) {
     callAPI('POST', $api_url . $endpoint_lineas, $payload);
 }
 
-// --- 4. VALIDAR (CRÍTICO PARA OBTENER FOLIO) ---
+// --- 4. VALIDAR ---
 callAPI('POST', $api_url . "/proposals/$id_documento/validate", ["notrigger" => 0]);
 
-// --- 5. OBTENER FOLIO FINAL ---
+// --- 5. OBTENER FOLIO ---
 $doc_final = callAPI('GET', $api_url . "/proposals/$id_documento");
-$ref_doc = $doc_final['ref'];
+$ref_doc = (isset($doc_final['ref'])) ? $doc_final['ref'] : "FOLIO-PENDIENTE";
 
-// --- (ZONA PDF ELIMINADA POR COMPLETO) ---
-
-// --- 6. ENVÍO DE CORREO (SOLO TEXTO) ---
+// --- 6. ENVÍO DE CORREO ---
 $mail = new PHPMailer(true);
 $mail_enviado = false;
 try {
@@ -135,7 +160,6 @@ try {
         $mail->setFrom(SMTP_USER, 'Carpas Montes');
         $mail->addAddress($input['email'], $input['cliente']); 
         
-        // Mensaje Claro y Directo
         $cuerpo = "
         <div style='font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px;'>
             <h2 style='color: #0e4c81; margin-top:0;'>Solicitud Recibida</h2>
@@ -170,6 +194,6 @@ echo json_encode([
     'success' => true, 
     'ref' => $ref_doc, 
     'email_sent' => $mail_enviado,
-    'pdf_url' => false // Confirmamos que NO hay PDF
+    'pdf_url' => false 
 ]);
 ?>

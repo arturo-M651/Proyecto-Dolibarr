@@ -1,5 +1,5 @@
 /**
- * APP.JS - LÓGICA V45 (SEPARADA Y LIMPIA)
+ * APP.JS - LÓGICA V58 (ENVÍO DINÁMICO TIPO DE TERCERO)
  */
 
 AOS.init({ once: true, disable: 'mobile' });
@@ -225,16 +225,31 @@ function renderizar() {
     document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
 }
 
-// ENVÍO (MODO SOLO REFERENCIA)
+// ENVÍO (MODO SOLO REFERENCIA + TIPO TERCERO DINÁMICO)
 async function enviarPedido(tipo) {
-    // Forzamos visualmente 'cotizacion'
     tipo = 'cotizacion'; 
     
+    // 1. CAPTURAR DATOS
+    const selectTercero = document.getElementById('tipo_tercero');
+    const typentId = selectTercero.value; // ID real de Dolibarr (e.g., 2, 8)
+    const typentLabel = selectTercero.options[selectTercero.selectedIndex]?.text; // Nombre visible (e.g., Particular)
+
     const c = document.getElementById('cliente').value;
     const e = document.getElementById('email').value;
     const f = document.getElementById('fecha').value;
     
-    if (!c || !e || !f || carrito.length === 0) { alert("Completa: Nombre, Email y Fecha."); return; }
+    // 2. VALIDACIONES
+    if (!typentId || typentId === "") { 
+        alert("⚠️ Por favor selecciona qué tipo de cliente eres (Particular, Empresa, etc)."); 
+        selectTercero.focus();
+        return; 
+    }
+
+    if (!c || !e || !f || carrito.length === 0) { 
+        alert("Completa: Nombre, Email y Fecha."); 
+        return; 
+    }
+
     if(!confirm(`¿Enviar solicitud de cotización?`)) return;
 
     const btn = event.target;
@@ -246,6 +261,8 @@ async function enviarPedido(tipo) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                typent_id: typentId, // ID numérico para Dolibarr
+                tipo_label: typentLabel, // Nombre para nota
                 cliente: c, email: e, fecha: f,
                 telefono: document.getElementById('telefono').value,
                 direccion: document.getElementById('direccion').value,

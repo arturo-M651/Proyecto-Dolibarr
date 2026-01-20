@@ -1,26 +1,46 @@
 <?php
 /**
- * PRUEBA_API.PHP - V45 (HTML ESTRUCTURAL LIMPIO)
+ * PRUEBA_API.PHP - V59 (FIX: SELECT DE TERCEROS CON RESPALDO)
+ * - Intenta cargar desde API.
+ * - Si falla (por permisos), usa opciones por defecto para que nunca falle.
  */
 require_once 'config.php'; 
-$api_url = DOL_BASE_URL; $api_key = DOL_API_KEY;
+$api_url = DOL_BASE_URL; 
+$api_key = DOL_API_KEY;
 
 function callAPI($url, $api_key) {
     $curl = curl_init();
-    curl_setopt_array($curl, array(CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), CURLOPT_TIMEOUT => 10));
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $url, 
+        CURLOPT_RETURNTRANSFER => true, 
+        CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), 
+        CURLOPT_TIMEOUT => 5 // Timeout bajo para no bloquear si falla
+    ));
     $response = curl_exec($curl);
     if(curl_errno($curl)) { curl_close($curl); return []; }
     curl_close($curl);
     return json_decode($response, true);
 }
 
+// 1. Cargar Categorías
 $lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
+
+// 2. Intentar Cargar Diccionario (Puede fallar si no es Admin)
+$lista_tipos_tercero = callAPI($api_url . "/setup/dictionary/c_typent?sortfield=libelle&sortorder=ASC", $api_key);
+
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 $titulo_pagina = "Nuestra Colección";
-if ($cat_id && is_array($lista_categorias)) { foreach($lista_categorias as $c) { if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } } }
+if ($cat_id && is_array($lista_categorias)) { 
+    foreach($lista_categorias as $c) { 
+        if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } 
+    } 
+}
 $es_mobiliario = (stripos($titulo_pagina, 'Mobiliario') !== false);
 $productos = [];
-if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; $productos = callAPI($api_url . $endpoint, $api_key); }
+if ($cat_id) { 
+    $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; 
+    $productos = callAPI($api_url . $endpoint, $api_key); 
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -227,6 +247,31 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
             <div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-cart3"></i> Tu Cotización</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
                 <div class="bg-light p-3 rounded mb-3 border">
+                    <label class="small fw-bold text-muted mb-1">¿Qué tipo de cliente eres?</label>
+                    <select id="tipo_tercero" class="form-select form-select-sm mb-3 border-primary fw-bold">
+                        <option value="" selected disabled>-- Selecciona --</option>
+                        <?php 
+                        // LÓGICA HÍBRIDA (API + FALLBACK)
+                        $opciones_generadas = false;
+                        
+                        // 1. Intentamos usar la API
+                        if (is_array($lista_tipos_tercero) && !isset($lista_tipos_tercero['error'])) {
+                            foreach ($lista_tipos_tercero as $tipo) {
+                                if(isset($tipo['id']) && isset($tipo['libelle'])) {
+                                    echo '<option value="' . $tipo['id'] . '">' . $tipo['libelle'] . '</option>';
+                                    $opciones_generadas = true;
+                                }
+                            }
+                        }
+
+                        // 2. Fallback si la API falló (para que no salga vacío)
+                        if (!$opciones_generadas) {
+                            echo '<option value="8">Particular</option>';
+                            echo '<option value="2">Empresa</option>'; 
+                        }
+                        ?>
+                    </select>
+
                     <input type="text" id="cliente" class="form-control form-control-sm mb-2" placeholder="Nombre Completo *">
                     <input type="email" id="email" class="form-control form-control-sm mb-2" placeholder="Email *">
                     <input type="date" id="fecha" class="form-control form-control-sm mb-2">
@@ -240,9 +285,9 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                 </div>
                 <ul id="lista-carrito" class="list-group list-group-flush mb-3"></ul>
                 <div class="d-flex justify-content-between h5 fw-bold"><span>Estimado:</span><span class="text-primary" id="total-precio">$0.00</span></div>
-                    </div>
-                     <div class="modal-footer flex-column border-0 pt-0">
-                    <div class="row w-100 g-2">
+            </div>
+            <div class="modal-footer flex-column border-0 pt-0">
+                <div class="row w-100 g-2">
                     <div class="col-12"><button class="btn btn-gold w-100 rounded-pill fw-bold shadow-sm" onclick="enviarPedido('cotizacion')"><i class="bi bi-file-earmark-text me-2"></i> Solicitar Cotización</button></div>
                     <div class="col-12 text-center mt-2"><button class="btn btn-link text-muted btn-sm text-decoration-none" onclick="borrarTodo()">Vaciar Carrito</button></div>
                 </div>
