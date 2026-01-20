@@ -240,9 +240,9 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                 </div>
                 <ul id="lista-carrito" class="list-group list-group-flush mb-3"></ul>
                 <div class="d-flex justify-content-between h5 fw-bold"><span>Estimado:</span><span class="text-primary" id="total-precio">$0.00</span></div>
-            </div>
-            <div class="modal-footer flex-column border-0 pt-0">
-                <div class="row w-100 g-2">
+                    </div>
+                     <div class="modal-footer flex-column border-0 pt-0">
+                    <div class="row w-100 g-2">
                     <div class="col-12"><button class="btn btn-gold w-100 rounded-pill fw-bold shadow-sm" onclick="enviarPedido('cotizacion')"><i class="bi bi-file-earmark-text me-2"></i> Solicitar Cotización</button></div>
                     <div class="col-12 text-center mt-2"><button class="btn btn-link text-muted btn-sm text-decoration-none" onclick="borrarTodo()">Vaciar Carrito</button></div>
                 </div>
@@ -311,6 +311,30 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
         </div>
     </div>
 </div>
+<footer class="bg-dark text-white pt-5 pb-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
+                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
+                    <p class="text-white-50 small">
+                        Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
+                    </p>
+                </div>
+                <div class="col-12 col-md-4 mb-4 text-right text-md-start">
+                    <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
+                    <ul class="list-unstyled text-white-50 small">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center text-secondary small">
+                © 2026 Carpas Montes. Todos los Derechos Reservados.
+            </div>
+        </div>
+    </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

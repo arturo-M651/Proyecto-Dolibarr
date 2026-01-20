@@ -140,7 +140,8 @@ try {
         <div style='font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px; max-width: 600px;'>
             <h2 style='color: #0e4c81; margin-top:0;'>Solicitud Recibida</h2>
             <p>Hola <strong>{$input['cliente']}</strong>,</p>
-            <p>Hemos registrado tu solicitud correctamente con el folio:</p>
+            <p>Hemos registrado tu solicitud correctamente, es importante que presentes este numero de folio cuando se te confirme tu cotizacion.</p>
+            <p>Tu Folio es:</p>
             <div style='background: #f8f9fa; padding: 15px; text-align: center; margin: 20px 0; border: 1px dashed #0e4c81;'>
                 <h1 style='margin:0; color: #333;'>{$ref_doc}</h1>
             </div>
