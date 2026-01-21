@@ -150,7 +150,7 @@ if ($cat_id) {
         <div class="benefits-section mb-5" data-aos="fade-up">
             <div class="row g-3 g-md-4">
                 <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div><div><h5 class="fw-bold mb-1">Cotización Rápida</h5><p class="text-muted small mb-0">No tiene ningun costo.</p></div></div></div>
-                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Impecable</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
+                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Limpio</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
                 <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div><div><h5 class="fw-bold mb-1">Confirmación Personal</h5><p class="text-muted small mb-0">Agendamos tu evento.</p></div></div></div>
             </div>
         </div>
