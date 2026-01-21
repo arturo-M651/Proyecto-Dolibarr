@@ -1,46 +1,28 @@
 <?php
 /**
- * PRUEBA_API.PHP - V59 (FIX: SELECT DE TERCEROS CON RESPALDO)
- * - Intenta cargar desde API.
- * - Si falla (por permisos), usa opciones por defecto para que nunca falle.
+ * PRUEBA_API.PHP - V60 (CON SOLICITUD ESPECIAL)
  */
 require_once 'config.php'; 
-$api_url = DOL_BASE_URL; 
-$api_key = DOL_API_KEY;
+$api_url = DOL_BASE_URL; $api_key = DOL_API_KEY;
 
 function callAPI($url, $api_key) {
     $curl = curl_init();
-    curl_setopt_array($curl, array(
-        CURLOPT_URL => $url, 
-        CURLOPT_RETURNTRANSFER => true, 
-        CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), 
-        CURLOPT_TIMEOUT => 5 // Timeout bajo para no bloquear si falla
-    ));
+    curl_setopt_array($curl, array(CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), CURLOPT_TIMEOUT => 5));
     $response = curl_exec($curl);
     if(curl_errno($curl)) { curl_close($curl); return []; }
     curl_close($curl);
     return json_decode($response, true);
 }
 
-// 1. Cargar Categorías
 $lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
-
-// 2. Intentar Cargar Diccionario (Puede fallar si no es Admin)
 $lista_tipos_tercero = callAPI($api_url . "/setup/dictionary/c_typent?sortfield=libelle&sortorder=ASC", $api_key);
 
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 $titulo_pagina = "Nuestra Colección";
-if ($cat_id && is_array($lista_categorias)) { 
-    foreach($lista_categorias as $c) { 
-        if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } 
-    } 
-}
+if ($cat_id && is_array($lista_categorias)) { foreach($lista_categorias as $c) { if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } } }
 $es_mobiliario = (stripos($titulo_pagina, 'Mobiliario') !== false);
 $productos = [];
-if ($cat_id) { 
-    $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; 
-    $productos = callAPI($api_url . $endpoint, $api_key); 
-}
+if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; $productos = callAPI($api_url . $endpoint, $api_key); }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -149,8 +131,8 @@ if ($cat_id) {
 
         <div class="benefits-section mb-5" data-aos="fade-up">
             <div class="row g-3 g-md-4">
-                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div><div><h5 class="fw-bold mb-1">Cotización Rápida</h5><p class="text-muted small mb-0">No tiene ningun costo.</p></div></div></div>
-                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Limpio</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
+                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div><div><h5 class="fw-bold mb-1">Cotización Rápida</h5><p class="text-muted small mb-0">Recibe tu PDF al instante.</p></div></div></div>
+                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Impecable</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
                 <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div><div><h5 class="fw-bold mb-1">Confirmación Personal</h5><p class="text-muted small mb-0">Agendamos tu evento.</p></div></div></div>
             </div>
         </div>
@@ -158,6 +140,23 @@ if ($cat_id) {
         <div class="text-center mb-4" data-aos="fade-up"><h2 class="fw-bold text-dark">Explora por Categorías</h2><div style="width: 60px; height: 3px; background: var(--gold); margin: 10px auto;"></div></div>
 
         <div class="row g-4">
+            
+            <div class="col-6 col-md-4" data-aos="fade-up">
+                <div class="cat-card text-decoration-none h-100 d-flex flex-column justify-content-center align-items-center bg-white border border-2 border-warning shadow-sm cursor-pointer" 
+                     style="min-height: 250px; cursor: pointer; border-style: dashed !important;"
+                     onclick="abrirModalNota()">
+                    <div class="text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-chat-heart text-warning display-4"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-2">¿Necesitas algo especial?</h4>
+                        <p class="text-muted small mb-0">¿No encuentras lo que buscas? ¡Cuéntanos! Lo agregamos a tu cotización.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-3 rounded-pill fw-bold">
+                            <i class="bi bi-pencil-square"></i> Da clic Aquí
+                        </button>
+                    </div>
+                </div>
+            </div>
             <?php if (is_array($lista_categorias) && !isset($lista_categorias['error'])) { foreach ($lista_categorias as $cat) { $img_cat = "img_categorias/" . $cat['id'] . ".jpg"; ?>
                 <div class="col-6 col-md-4" data-aos="fade-up">
                     <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none">
@@ -251,10 +250,7 @@ if ($cat_id) {
                     <select id="tipo_tercero" class="form-select form-select-sm mb-3 border-primary fw-bold">
                         <option value="" selected disabled>-- Selecciona --</option>
                         <?php 
-                        // LÓGICA HÍBRIDA (API + FALLBACK)
                         $opciones_generadas = false;
-                        
-                        // 1. Intentamos usar la API
                         if (is_array($lista_tipos_tercero) && !isset($lista_tipos_tercero['error'])) {
                             foreach ($lista_tipos_tercero as $tipo) {
                                 if(isset($tipo['id']) && isset($tipo['libelle'])) {
@@ -263,11 +259,10 @@ if ($cat_id) {
                                 }
                             }
                         }
-
-                        // 2. Fallback si la API falló (para que no salga vacío)
                         if (!$opciones_generadas) {
                             echo '<option value="8">Particular</option>';
-                            echo '<option value="2">Empresa</option>'; 
+                            echo '<option value="2">Empresa</option>';
+                            echo '<option value="2">Organizador</option>'; 
                         }
                         ?>
                     </select>
@@ -356,33 +351,46 @@ if ($cat_id) {
         </div>
     </div>
 </div>
-<footer class="bg-dark text-white pt-5 pb-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
-                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
-                    <p class="text-white-50 small">
-                        Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
-                    </p>
-                </div>
-                <div class="col-12 col-md-4 mb-4 text-right text-md-start">
-                    <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
-                    <ul class="list-unstyled text-white-50 small">
-                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
-                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
-                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
-                    </ul>
-                </div>
+
+<div class="modal fade" id="modalNota" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header bg-warning text-dark border-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-chat-heart-fill"></i> ¿Qué necesitas?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <hr class="border-secondary">
-            <div class="text-center text-secondary small">
-                © 2026 Carpas Montes. Todos los Derechos Reservados.
+            <div class="modal-body">
+                <p class="small text-muted">Describe aquí lo que buscas (colores, productos especiales, ideas, etc.) y lo agregaremos a tu cotización para que nuestro equipo lo revise.</p>
+                <textarea id="textoNota" class="form-control" rows="4" placeholder="Ej: Necesito manteles color rosa pastel y 50 sillas infantiles..."></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning rounded-pill fw-bold" onclick="agregarNotaCarrito()">Agregar a Cotización</button>
             </div>
         </div>
-    </footer>
+    </div>
+</div>
+
+<footer class="bg-dark text-white pt-5 pb-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-4 mb-4 text-center text-md-start">
+                <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
+                <p class="text-white-50 small">Con más de 25 años de experiencia.</p>
+            </div>
+            <div class="col-12 col-md-4 mb-4 text-right text-md-start">
+                <h5 class="mb-3 fw-bold">Contacto</h5>
+                <ul class="list-unstyled text-white-50 small">
+                    <li>contacto@carpasmontes.com</li>
+                     <li>contacto@carpasmontes.com</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
