@@ -1,5 +1,5 @@
 /**
- * APP.JS - V61 (FIX: INICIALIZACIÓN SEGURA DE MODALES)
+ * APP.JS - V63 (FIX FINAL: RENDERIZADO AL MOSTRAR MODAL)
  */
 
 AOS.init({ once: true, disable: 'mobile' });
@@ -16,19 +16,16 @@ let anchoFijo = 0;
 // Variables simulador
 let viewState = { mode: '2d', scale: 20, offsetX: 0, offsetY: 0, isDragging: false, lastX: 0, lastY: 0, lastPinchDist: 0 };
 
-// INICIALIZACIÓN DIFERIDA (PARA EVITAR ERRORES SI EL HTML NO EXISTE AÚN)
+// Variables UI
 let modalCantidadBootstrap = null;
 let modalDetallesBootstrap = null;
 let modalCarritoBootstrap = null;
 let modalNotaBootstrap = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inicializar Modales de forma segura
+    // 1. Inicializar Modales
     const elCant = document.getElementById('modalCantidad');
     if(elCant) modalCantidadBootstrap = new bootstrap.Modal(elCant);
-
-    const elDet = document.getElementById('modalDetalles');
-    if(elDet) modalDetallesBootstrap = new bootstrap.Modal(elDet);
 
     const elCarr = document.getElementById('modalCarrito');
     if(elCarr) modalCarritoBootstrap = new bootstrap.Modal(elCarr);
@@ -36,7 +33,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const elNota = document.getElementById('modalNota');
     if(elNota) modalNotaBootstrap = new bootstrap.Modal(elNota);
 
-    // 2. Inicializar Filtros
+    // --- FIX CRÍTICO DEL SIMULADOR ---
+    const elDet = document.getElementById('modalDetalles');
+    if(elDet) {
+        modalDetallesBootstrap = new bootstrap.Modal(elDet);
+        
+        // Escuchamos el evento "shown.bs.modal" (Se dispara cuando termina la animación de apertura)
+        elDet.addEventListener('shown.bs.modal', function () {
+            if (esCarpaModular) {
+                // El modal ya es visible 100%, forzamos el redibujado
+                console.log("Modal visible: Forzando render...");
+                const container = document.getElementById('contenedorCanvas');
+                const canvas = document.getElementById('canvasPlano');
+                if(container && canvas) {
+                    canvas.width = container.clientWidth;
+                    canvas.height = container.clientHeight;
+                    autoFit(); // Recalcula el zoom para que se vea centrado
+                    actualizarCalculosRender(); // Asegura que los textos de capacidad se actualicen
+                }
+            }
+        });
+    }
+
+    // Listener para cuando cambian de pestaña (Fotos <-> Simulador) manualmente
+    const tabSimulador = document.getElementById('pills-plano-tab');
+    if (tabSimulador) {
+        tabSimulador.addEventListener('shown.bs.tab', function () {
+            setTimeout(() => { 
+                autoFit(); 
+                actualizarCalculosRender();
+            }, 50);
+        });
+    }
+
+    // Inicializar Filtros
     if(document.querySelector('.mode-switch')) {
         filtrarMobiliario('unidad'); 
         const btn = document.querySelector('.mode-btn');
@@ -45,71 +75,48 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizar();
 });
 
-// --- FUNCIONES DE NOTAS ESPECIALES (FIX CLIC) ---
+// --- FUNCIONES LÓGICA ---
+
 function abrirModalNota() {
     if (modalNotaBootstrap) {
         document.getElementById('textoNota').value = ''; 
         modalNotaBootstrap.show();
     } else {
-        // Intento de rescate por si no se inicializó al carga
         const elNota = document.getElementById('modalNota');
         if(elNota) {
             modalNotaBootstrap = new bootstrap.Modal(elNota);
             modalNotaBootstrap.show();
-        } else {
-            alert("Error: No se encuentra el recuadro de notas en el sistema.");
-            console.error("Falta el <div id='modalNota'> en prueba_api.php");
-        }
+        } else { alert("Error: Falta el modal de notas."); }
     }
 }
 
 function agregarNotaCarrito() {
     const texto = document.getElementById('textoNota').value.trim();
-    if (!texto) {
-        alert("Por favor escribe qué necesitas.");
-        return;
-    }
+    if (!texto) { alert("Por favor escribe qué necesitas."); return; }
     
-    const itemNota = {
-        id: 0, 
-        nombre: "📝 Solicitud Especial: " + texto,
-        precio: 0, 
-        cant: 1,
-        esNota: true 
-    };
-    
+    const itemNota = { id: 0, nombre: "📝 Solicitud Especial: " + texto, precio: 0, cant: 1, esNota: true };
     carrito.push(itemNota);
     guardar();
-    
     if(modalNotaBootstrap) modalNotaBootstrap.hide();
-    
     alert("✅ Nota agregada a tu cotización.");
 }
 
-// ... RESTO DEL CÓDIGO (Intacto, solo asegurando variables globales) ...
-
-// FILTRADO
 function filtrarMobiliario(modo) {
     const btns = document.querySelectorAll('.mode-btn');
     btns.forEach(b => b.classList.remove('active'));
     if(event && event.target) event.target.classList.add('active');
-    
     const slider = document.getElementById('modeSlider');
     if(slider) slider.style.transform = (modo === 'paquete') ? 'translateX(100%)' : 'translateX(0)';
-    
     document.querySelectorAll('.item-producto').forEach(prod => {
         const tipo = prod.getAttribute('data-tipo');
         if (tipo === modo) {
             prod.style.display = 'block';
             prod.classList.remove('aos-animate');
             setTimeout(() => prod.classList.add('aos-animate'), 50);
-        } else {
-            prod.style.display = 'none';
-        }
+        } else { prod.style.display = 'none'; }
     });
 }
 
-// BUSCADOR
 const buscador = document.getElementById('buscadorJS');
 if(buscador){
     buscador.addEventListener('keyup', function(e) {
@@ -123,7 +130,6 @@ if(buscador){
     });
 }
 
-// DETALLES
 async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
     currentProductoId = id;
     currentProductoNombre = nombre;
@@ -145,13 +151,18 @@ async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
         
         panelMedidas.style.display = 'block';
         divCant.style.display = 'none'; 
-        
         document.getElementById('pills-plano-tab').style.display = 'block'; 
+        
+        // Valores Iniciales
         document.getElementById('inputAncho').value = anchoFijo;
         document.getElementById('inputLargo').value = 5; 
         document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2) + " / m²";
-        document.getElementById('lblPrecioTotal').innerText = ""; 
+        
         setMode('2d'); 
+        
+        // IMPORTANTE: Pre-calculamos aunque no se vea aún
+        actualizarCalculosRender(); 
+
     } else {
         esCarpaModular = false;
         panelMedidas.style.display = 'none';
@@ -159,9 +170,11 @@ async function verDetalles(ref, nombre, desc, precio, imgMain, id) {
         document.getElementById('pills-plano-tab').style.display = 'none'; 
         document.getElementById('detallePrecio').innerText = "$" + precio.toFixed(2);
         document.getElementById('lblPrecioTotal').innerText = "";
+        
         const tabBtn = document.querySelector('#pills-foto-tab');
         new bootstrap.Tab(tabBtn).show();
     }
+
     if(modalDetallesBootstrap) modalDetallesBootstrap.show();
     cargarGaleria(ref, imgMain);
 }
@@ -242,14 +255,11 @@ function renderizar() {
     const lista = document.getElementById('lista-carrito');
     lista.innerHTML = '';
     let total = 0;
-    
     if(carrito.length === 0) lista.innerHTML = '<div class="text-center text-muted small py-3">Carrito vacío</div>';
-    
     carrito.forEach((item, index) => {
         total += item.precio * item.cant;
         let unidad = item.esModular ? "m²" : "";
-        if(item.esNota) unidad = "(Nota)"; // Identificador visual
-        
+        if(item.esNota) unidad = "(Nota)";
         lista.innerHTML += `
             <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
                 <div class="lh-1">
@@ -259,7 +269,6 @@ function renderizar() {
                 <button class="btn btn-sm text-danger" onclick="eliminar(${index})"><i class="bi bi-trash"></i></button>
             </li>`;
     });
-    
     document.getElementById('contador').innerText = carrito.length;
     document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
 }
