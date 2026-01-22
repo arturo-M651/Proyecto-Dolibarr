@@ -384,7 +384,7 @@ if ($cat_id) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="small text-muted">Describe aquí lo que buscas (colores, productos especiales, ideas, etc.) y lo agregaremos a tu cotización para que nuestro equipo lo revise.</p>
+                <p class="small text-muted">Describe aquí lo que buscas (colores, productos especiales, etc.) y lo agregaremos a tu cotización para que nuestro equipo lo revise.</p>
                 <textarea id="textoNota" class="form-control" rows="4" placeholder="Ej: Necesito manteles color rosa pastel y 50 sillas infantiles..."></textarea>
             </div>
             <div class="modal-footer border-0">
