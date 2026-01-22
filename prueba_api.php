@@ -1,28 +1,44 @@
 <?php
 /**
- * PRUEBA_API.PHP - V60 (CON SOLICITUD ESPECIAL)
+ * PRUEBA_API.PHP - V64 (FIX: INPUT LARGO MULTIPLOS DE 5)
  */
 require_once 'config.php'; 
-$api_url = DOL_BASE_URL; $api_key = DOL_API_KEY;
+$api_url = DOL_BASE_URL; 
+$api_key = DOL_API_KEY;
 
 function callAPI($url, $api_key) {
     $curl = curl_init();
-    curl_setopt_array($curl, array(CURLOPT_URL => $url, CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), CURLOPT_TIMEOUT => 5));
+    curl_setopt_array($curl, array(
+        CURLOPT_URL => $url, 
+        CURLOPT_RETURNTRANSFER => true, 
+        CURLOPT_HTTPHEADER => array("DOLAPIKEY: " . $api_key, "Accept: application/json"), 
+        CURLOPT_TIMEOUT => 5
+    ));
     $response = curl_exec($curl);
     if(curl_errno($curl)) { curl_close($curl); return []; }
     curl_close($curl);
     return json_decode($response, true);
 }
 
+// 1. Cargar Categorías
 $lista_categorias = callAPI($api_url . "/categories?type=product&sortfield=label&sortorder=ASC", $api_key);
+
+// 2. Cargar Diccionario
 $lista_tipos_tercero = callAPI($api_url . "/setup/dictionary/c_typent?sortfield=libelle&sortorder=ASC", $api_key);
 
 $cat_id = isset($_GET['cat']) ? $_GET['cat'] : '';
 $titulo_pagina = "Nuestra Colección";
-if ($cat_id && is_array($lista_categorias)) { foreach($lista_categorias as $c) { if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } } }
+if ($cat_id && is_array($lista_categorias)) { 
+    foreach($lista_categorias as $c) { 
+        if($c['id'] == $cat_id) { $titulo_pagina = $c['label']; break; } 
+    } 
+}
 $es_mobiliario = (stripos($titulo_pagina, 'Mobiliario') !== false);
 $productos = [];
-if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; $productos = callAPI($api_url . $endpoint, $api_key); }
+if ($cat_id) { 
+    $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" . $cat_id; 
+    $productos = callAPI($api_url . $endpoint, $api_key); 
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -157,6 +173,7 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                     </div>
                 </div>
             </div>
+
             <?php if (is_array($lista_categorias) && !isset($lista_categorias['error'])) { foreach ($lista_categorias as $cat) { $img_cat = "img_categorias/" . $cat['id'] . ".jpg"; ?>
                 <div class="col-6 col-md-4" data-aos="fade-up">
                     <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none">
@@ -332,10 +349,11 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                             <div class="mb-4 flex-grow-1"><h6 class="fw-bold small text-dark mb-1">Descripción:</h6><p class="text-muted small lh-sm" id="detalleDesc" style="max-height: 200px; overflow-y: auto;"></p></div>
                             <div class="mt-auto pt-3 border-top">
                                 <div id="panelMedidas" class="mb-3 p-3 bg-light rounded-3 border" style="display:none;">
+                                    <h6 class="fw-bold small text-dark mb-1">Solo multiplos de 5</h6>
                                     <div class="row g-2 align-items-center">
                                         <div class="col-5"><label class="small text-muted d-block">Ancho (m)</label><input type="number" class="form-control form-control-sm fw-bold bg-white" id="inputAncho" readonly></div>
                                         <div class="col-2 text-center pt-3 text-muted">x</div>
-                                        <div class="col-5"><label class="small text-muted d-block">Largo (m)</label><input type="number" class="form-control form-control-sm fw-bold border-warning" id="inputLargo" value="5" min="3" oninput="actualizarCalculosRender()"></div>
+                                        <div class="col-5"><label class="small text-muted d-block">Largo (m)</label><input type="number" class="form-control form-control-sm fw-bold border-warning" id="inputLargo" value="5" min="5" step="5" oninput="actualizarCalculosRender()"></div>
                                     </div>
                                     <div class="mt-2 text-center"><span class="badge bg-warning text-dark"><i class="bi bi-people"></i> ~<span id="lblCapacidad">0</span> personas</span></div>
                                 </div>
@@ -382,7 +400,6 @@ if ($cat_id) { $endpoint = "/products?sortfield=t.ref&sortorder=ASC&category=" .
                 <h5 class="mb-3 fw-bold">Contacto</h5>
                 <ul class="list-unstyled text-white-50 small">
                     <li>contacto@carpasmontes.com</li>
-                     <li>contacto@carpasmontes.com</li>
                 </ul>
             </div>
         </div>
