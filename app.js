@@ -1,7 +1,8 @@
 /**
- * APP.JS - V65 (CON VALIDACIÓN DE FECHAS)
- * - Bloquea días pasados en el calendario (Mínimo 3 días de anticipación).
- * - Mantiene lógica de Módulos de 5m y Notas Especiales.
+ * APP.JS - V66 (FIX: FILTRO DE MOBILIARIO CORRECTO + FECHAS + INPUTS)
+ * - Soluciona que el filtro de "Unidad/Paquete" no cargue al inicio.
+ * - Incluye validación de fecha mínima (3 días).
+ * - Incluye validación de carpas (múltiplos de 5).
  */
 
 AOS.init({ once: true, disable: 'mobile' });
@@ -25,6 +26,7 @@ let modalCarritoBootstrap = null;
 let modalNotaBootstrap = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar Modales
     const elCant = document.getElementById('modalCantidad');
     if(elCant) modalCantidadBootstrap = new bootstrap.Modal(elCant);
 
@@ -51,10 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const elNota = document.getElementById('modalNota');
     if(elNota) modalNotaBootstrap = new bootstrap.Modal(elNota);
 
-    // --- NUEVO: CONFIGURAR FECHA MÍNIMA (HOY + 3 DÍAS) ---
+    // --- FIX FILTRO INICIAL ---
+    // Si existe el switch, forzamos el filtro 'unidad' al cargar
+    if(document.querySelector('.mode-switch')) {
+        filtrarMobiliario('unidad', null); // null indica que es carga automática
+    }
+
+    // Configurar Fecha Mínima
     configurarFechaMinima();
 
-    // --- VALIDACIÓN DE MÚLTIPLOS DE 5 (INTACTA) ---
+    // Validación Múltiplos de 5
     const inputLargo = document.getElementById('inputLargo');
     if(inputLargo) {
         inputLargo.addEventListener('change', function() {
@@ -68,36 +76,56 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if(document.querySelector('.mode-switch')) {
-        filtrarMobiliario('unidad'); 
-        const btn = document.querySelector('.mode-btn');
-        if(btn) btn.classList.add('active');
-    }
     renderizar();
 });
 
-// --- FUNCIÓN NUEVA: CALCULAR FECHA MÍNIMA ---
+// --- FUNCIONES LÓGICA ---
+
+// FIX: Función de Filtrado Robusta
+function filtrarMobiliario(modo, btnRef) {
+    // 1. Gestionar Clases Visuales (Botones)
+    const btns = document.querySelectorAll('.mode-btn');
+    btns.forEach(b => b.classList.remove('active'));
+
+    if (btnRef) {
+        // Si fue click manual, usamos la referencia directa
+        btnRef.classList.add('active');
+    } else {
+        // Si es carga automática, buscamos el botón que corresponde
+        // Buscamos el botón cuyo onclick contenga el modo (ej. 'unidad')
+        const targetBtn = document.querySelector(`.mode-btn[onclick*="'${modo}'"]`);
+        if(targetBtn) targetBtn.classList.add('active');
+    }
+    
+    // 2. Mover el Slider
+    const slider = document.getElementById('modeSlider');
+    if(slider) slider.style.transform = (modo === 'paquete') ? 'translateX(100%)' : 'translateX(0)';
+    
+    // 3. Filtrar Productos (Ocultar/Mostrar)
+    document.querySelectorAll('.item-producto').forEach(prod => {
+        const tipo = prod.getAttribute('data-tipo');
+        if (tipo === modo) {
+            prod.style.display = 'block';
+            prod.classList.remove('aos-animate');
+            setTimeout(() => prod.classList.add('aos-animate'), 50); // Reiniciar animación
+        } else {
+            prod.style.display = 'none';
+        }
+    });
+}
+
 function configurarFechaMinima() {
     const inputFecha = document.getElementById('fecha');
     if (!inputFecha) return;
-
     const hoy = new Date();
-    // DÍAS DE ANTICIPACIÓN: 3
     const diasAnticipacion = 3; 
     hoy.setDate(hoy.getDate() + diasAnticipacion);
-
     const yyyy = hoy.getFullYear();
     const mm = String(hoy.getMonth() + 1).padStart(2, '0');
     const dd = String(hoy.getDate()).padStart(2, '0');
-    
-    const fechaMin = `${yyyy}-${mm}-${dd}`;
-    
-    // Bloquea días anteriores en el calendario
-    inputFecha.min = fechaMin;
-    console.log("Fecha mínima establecida:", fechaMin);
+    inputFecha.min = `${yyyy}-${mm}-${dd}`;
 }
 
-// RESTO DE FUNCIONES (INTACTO)
 function abrirModalNota() {
     if (modalNotaBootstrap) {
         document.getElementById('textoNota').value = ''; 
@@ -121,28 +149,12 @@ function agregarNotaCarrito() {
     alert("✅ Nota agregada.");
 }
 
-function filtrarMobiliario(modo) {
-    const btns = document.querySelectorAll('.mode-btn');
-    btns.forEach(b => b.classList.remove('active'));
-    if(event && event.target) event.target.classList.add('active');
-    const slider = document.getElementById('modeSlider');
-    if(slider) slider.style.transform = (modo === 'paquete') ? 'translateX(100%)' : 'translateX(0)';
-    document.querySelectorAll('.item-producto').forEach(prod => {
-        const tipo = prod.getAttribute('data-tipo');
-        if (tipo === modo) {
-            prod.style.display = 'block';
-            prod.classList.remove('aos-animate');
-            setTimeout(() => prod.classList.add('aos-animate'), 50);
-        } else { prod.style.display = 'none'; }
-    });
-}
-
 const buscador = document.getElementById('buscadorJS');
 if(buscador){
     buscador.addEventListener('keyup', function(e) {
         const texto = e.target.value.toLowerCase();
         document.querySelectorAll('.item-producto').forEach(item => {
-            if(item.style.display !== 'none'){
+            if(item.style.display !== 'none'){ // Solo buscar en los visibles
                 const nombre = item.getAttribute('data-nombre');
                 item.style.display = nombre.includes(texto) ? 'block' : 'none';
             }
@@ -287,7 +299,6 @@ function renderizar() {
     document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
 }
 
-// ENVÍO (CON VALIDACIÓN DE FECHA)
 async function enviarPedido(tipo) {
     tipo = 'cotizacion'; 
     const selectTercero = document.getElementById('tipo_tercero');
@@ -301,10 +312,9 @@ async function enviarPedido(tipo) {
     if (!typentId || typentId === "") { alert("⚠️ Por favor selecciona qué tipo de cliente eres."); selectTercero.focus(); return; }
     if (!c || !e || !f || carrito.length === 0) { alert("Completa: Nombre, Email y Fecha."); return; }
 
-    // Validación extra de fecha al enviar
-    const fechaSeleccionada = new Date(f + 'T00:00:00'); // Forzar hora local
+    const fechaSeleccionada = new Date(f + 'T00:00:00');
     const fechaMinima = new Date();
-    fechaMinima.setDate(fechaMinima.getDate() + 2); // Un poco de margen en JS
+    fechaMinima.setDate(fechaMinima.getDate() + 2); 
     fechaMinima.setHours(0,0,0,0);
 
     if (fechaSeleccionada < fechaMinima) {

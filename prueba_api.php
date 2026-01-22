@@ -1,6 +1,6 @@
 <?php
 /**
- * PRUEBA_API.PHP - V64 (FIX: INPUT LARGO MULTIPLOS DE 5)
+ * PRUEBA_API.PHP - V66 (FIX: FILTRO MOBILIARIO + FECHAS + INPUTS)
  */
 require_once 'config.php'; 
 $api_url = DOL_BASE_URL; 
@@ -191,7 +191,13 @@ if ($cat_id) {
         </div>
         
         <?php if ($es_mobiliario): ?>
-        <div class="mode-switch-container" data-aos="fade-down"><div class="mode-switch"><div class="mode-slider" id="modeSlider"></div><button class="mode-btn active" onclick="filtrarMobiliario('unidad')">Por Unidad</button><button class="mode-btn" onclick="filtrarMobiliario('paquete')">Por Paquete</button></div></div>
+        <div class="mode-switch-container" data-aos="fade-down">
+            <div class="mode-switch">
+                <div class="mode-slider" id="modeSlider"></div>
+                <button class="mode-btn active" onclick="filtrarMobiliario('unidad', this)">Por Unidad</button>
+                <button class="mode-btn" onclick="filtrarMobiliario('paquete', this)">Por Paquete</button>
+            </div>
+        </div>
         <?php endif; ?>
 
         <div class="row g-4" id="contenedorProductos">
