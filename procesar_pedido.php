@@ -1,8 +1,6 @@
 <?php
 /**
- * PROCESAR_PEDIDO.PHP - V58 (USO DE ID DINÁMICO)
- * - Recibe 'typent_id' directo desde Dolibarr via Frontend.
- * - Mantiene todas las correcciones anteriores (ID cliente, Folio, Sin PDF).
+ * PROCESAR_PEDIDO.PHP - V65 (CON VALIDACIÓN DE FECHA SERVIDOR)
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -48,13 +46,26 @@ if (!$input) { ob_end_clean(); echo json_encode(['success' => false, 'message' =
 
 $tipo_accion = 'cotizacion'; 
 
+// --- 0. VALIDACIÓN DE FECHAS (SEGURIDAD) ---
+$fecha_solicitada = strtotime($input['fecha']);
+// Mínimo 3 días de colchón desde HOY
+$fecha_minima = strtotime('+3 days 00:00:00'); 
+
+if ($fecha_solicitada < $fecha_minima) {
+    ob_end_clean();
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Error: La fecha del evento es demasiado próxima. Requerimos mínimo 3 días de anticipación.'
+    ]);
+    exit;
+}
+
 // --- 1. GESTIÓN CLIENTE ---
 $email_cliente = $input['email'];
 $filtro_email = urlencode("t.email:like:'" . $email_cliente . "'");
 $busqueda = callAPI('GET', $api_url . "/thirdparties?sqlfilters=($filtro_email)");
 
-// RECIBIMOS EL ID DIRECTO DEL DICCIONARIO
-$typent_id  = isset($input['typent_id']) ? (int)$input['typent_id'] : 8; // Default 8 (Particular) si falla
+$typent_id  = isset($input['typent_id']) ? (int)$input['typent_id'] : 8; 
 $tipo_label = isset($input['tipo_label']) ? $input['tipo_label'] : '';
 
 $direccion_extendida  = $input['direccion'] . "\nTel: " . $input['telefono'];
@@ -62,7 +73,7 @@ $direccion_extendida .= "\n[Cliente: " . $tipo_label . "]";
 
 $datos_cliente = [
     'name'         => $input['cliente'], 
-    'client'       => 2, // 2 = Prospecto
+    'client'       => 2, 
     'code_client'  => -1,
     'email'        => $input['email'],
     'phone'        => $input['telefono'],
@@ -70,7 +81,7 @@ $datos_cliente = [
     'zip'          => $input['cp'],
     'town'         => $input['ciudad'],
     'idprof1'      => $input['rfc'],
-    'typent_id'    => $typent_id, // Usamos el ID real de la API
+    'typent_id'    => $typent_id,
     'note_private' => "Registro Web.\nTipo Cliente: " . $tipo_label,
     'country_id'   => defined('ID_PAIS_MEXICO') ? ID_PAIS_MEXICO : 154
 ];
@@ -78,14 +89,10 @@ $datos_cliente = [
 $socid = 0;
 
 if (is_array($busqueda) && count($busqueda) > 0) {
-    // Cliente existente: Actualizamos
     $socid = $busqueda[0]['id'];
     callAPI('PUT', $api_url . "/thirdparties/" . $socid, $datos_cliente);
 } else {
-    // Cliente nuevo: Creamos
     $res_cliente = callAPI('POST', $api_url . "/thirdparties", $datos_cliente);
-    
-    // Validamos ID robustamente
     if (is_numeric($res_cliente)) {
         $socid = $res_cliente;
     } elseif (is_array($res_cliente) && isset($res_cliente['id'])) {
@@ -97,17 +104,16 @@ if (is_array($busqueda) && count($busqueda) > 0) {
 
 if ($socid <= 0) { 
     ob_end_clean(); 
-    echo json_encode(['success' => false, 'message' => 'Error cliente. No se pudo crear o recuperar el ID.']); 
+    echo json_encode(['success' => false, 'message' => 'Error cliente.']); 
     exit; 
 }
 
 // --- 2. CREAR DOCUMENTO ---
-$fecha_entrega = strtotime($input['fecha']);
 $endpoint_creacion = "/proposals";
 $datos_doc = [
     'socid' => $socid, 
     'date' => time(), 
-    'date_livraison' => $fecha_entrega,
+    'date_livraison' => $fecha_solicitada,
     'note_public' => "📅 Fecha del Evento: " . $input['fecha'],
     'action' => 'create'
 ];
@@ -122,7 +128,7 @@ if (is_numeric($res_doc)) {
     $id_documento = $res_doc['id'];
 }
 
-if ($id_documento <= 0) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error ID documento inválido.']); exit; }
+if ($id_documento <= 0) { ob_end_clean(); echo json_encode(['success' => false, 'message' => 'Error ID documento.']); exit; }
 
 // --- 3. LÍNEAS ---
 $endpoint_lineas = "/proposals/$id_documento/lines";
@@ -130,13 +136,22 @@ foreach ($input['items'] as $item) {
     $desc = (string)$item['nombre'];
     if (isset($item['esModular']) && $item['esModular']) $desc .= "\n(Medida: " . $item['cant'] . " m²)";
     
+    // Lógica para Notas Especiales (ID 0)
+    $fk_product = (int)$item['id'];
+    $tipo_producto = 0; 
+
+    if ($fk_product === 0) {
+        $fk_product = null;
+        $tipo_producto = 1; 
+    }
+
     $payload = [[
-        'fk_product' => (int)$item['id'], 
+        'fk_product' => $fk_product, 
         'qty' => (double)$item['cant'],
         'subprice' => (double)$item['precio'], 
         'desc' => $desc,
         'tva_tx' => defined('IVA_TASA') ? IVA_TASA : 16,
-        'product_type' => 0
+        'product_type' => $tipo_producto
     ]];
     callAPI('POST', $api_url . $endpoint_lineas, $payload);
 }
@@ -144,7 +159,7 @@ foreach ($input['items'] as $item) {
 // --- 4. VALIDAR ---
 callAPI('POST', $api_url . "/proposals/$id_documento/validate", ["notrigger" => 0]);
 
-// --- 5. OBTENER FOLIO ---
+// --- 5. FOLIO ---
 $doc_final = callAPI('GET', $api_url . "/proposals/$id_documento");
 $ref_doc = (isset($doc_final['ref'])) ? $doc_final['ref'] : "FOLIO-PENDIENTE";
 

@@ -1,5 +1,7 @@
 /**
- * APP.JS - V64 (FIX: VALIDACIÓN MÚLTIPLOS DE 5)
+ * APP.JS - V65 (CON VALIDACIÓN DE FECHAS)
+ * - Bloquea días pasados en el calendario (Mínimo 3 días de anticipación).
+ * - Mantiene lógica de Módulos de 5m y Notas Especiales.
  */
 
 AOS.init({ once: true, disable: 'mobile' });
@@ -49,25 +51,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const elNota = document.getElementById('modalNota');
     if(elNota) modalNotaBootstrap = new bootstrap.Modal(elNota);
 
-    // --- NUEVO: VALIDACIÓN ESTRICTA DE MÚLTIPLOS DE 5 ---
+    // --- NUEVO: CONFIGURAR FECHA MÍNIMA (HOY + 3 DÍAS) ---
+    configurarFechaMinima();
+
+    // --- VALIDACIÓN DE MÚLTIPLOS DE 5 (INTACTA) ---
     const inputLargo = document.getElementById('inputLargo');
     if(inputLargo) {
         inputLargo.addEventListener('change', function() {
             let val = parseInt(this.value) || 5;
-            
-            // Mínimo 5
             if (val < 5) val = 5;
-            
-            // Redondear al múltiplo de 5 superior más cercano (Ej: 11 -> 15)
             if (val % 5 !== 0) {
                 val = Math.ceil(val / 5) * 5; 
                 this.value = val;
-                // Feedback visual rápido
                 actualizarCalculosRender(); 
             }
         });
     }
-    // ----------------------------------------------------
 
     if(document.querySelector('.mode-switch')) {
         filtrarMobiliario('unidad'); 
@@ -77,7 +76,28 @@ document.addEventListener('DOMContentLoaded', () => {
     renderizar();
 });
 
-// RESTO DEL CÓDIGO (INTACTO)
+// --- FUNCIÓN NUEVA: CALCULAR FECHA MÍNIMA ---
+function configurarFechaMinima() {
+    const inputFecha = document.getElementById('fecha');
+    if (!inputFecha) return;
+
+    const hoy = new Date();
+    // DÍAS DE ANTICIPACIÓN: 3
+    const diasAnticipacion = 3; 
+    hoy.setDate(hoy.getDate() + diasAnticipacion);
+
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    
+    const fechaMin = `${yyyy}-${mm}-${dd}`;
+    
+    // Bloquea días anteriores en el calendario
+    inputFecha.min = fechaMin;
+    console.log("Fecha mínima establecida:", fechaMin);
+}
+
+// RESTO DE FUNCIONES (INTACTO)
 function abrirModalNota() {
     if (modalNotaBootstrap) {
         document.getElementById('textoNota').value = ''; 
@@ -267,6 +287,7 @@ function renderizar() {
     document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
 }
 
+// ENVÍO (CON VALIDACIÓN DE FECHA)
 async function enviarPedido(tipo) {
     tipo = 'cotizacion'; 
     const selectTercero = document.getElementById('tipo_tercero');
@@ -279,7 +300,19 @@ async function enviarPedido(tipo) {
     
     if (!typentId || typentId === "") { alert("⚠️ Por favor selecciona qué tipo de cliente eres."); selectTercero.focus(); return; }
     if (!c || !e || !f || carrito.length === 0) { alert("Completa: Nombre, Email y Fecha."); return; }
-    if(!confirm(`¿Enviar solicitud de cotización?`)) return;
+
+    // Validación extra de fecha al enviar
+    const fechaSeleccionada = new Date(f + 'T00:00:00'); // Forzar hora local
+    const fechaMinima = new Date();
+    fechaMinima.setDate(fechaMinima.getDate() + 2); // Un poco de margen en JS
+    fechaMinima.setHours(0,0,0,0);
+
+    if (fechaSeleccionada < fechaMinima) {
+        alert("⚠️ La fecha seleccionada es muy próxima.\nPor logística, requerimos al menos 3 días de anticipación.");
+        return;
+    }
+
+    if(!confirm(`¿Enviar solicitud de cotización para el ${f}?`)) return;
 
     const btn = event.target;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enviando...';
