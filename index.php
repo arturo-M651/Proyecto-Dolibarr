@@ -335,6 +335,8 @@
                 </div>
                 <div class="col-12 col-md-4 mb-4 text-center">
                     <a href="prueba_api.php" class="btn btn-gold w-100 py-3 rounded-pill fw-bold">IR AL CATÁLOGO</a>
+                    <br><br><br>
+                    <h5>Desarrollado por Arturo</h5>
                 </div>
             </div>
             <hr class="border-secondary">

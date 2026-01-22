@@ -114,7 +114,7 @@ $datos_doc = [
     'socid' => $socid, 
     'date' => time(), 
     'date_livraison' => $fecha_solicitada,
-    'note_public' => "📅 Fecha del Evento: " . $input['fecha'],
+    'note_public' => "Fecha del Evento: " . $input['fecha'],
     'action' => 'create'
 ];
 

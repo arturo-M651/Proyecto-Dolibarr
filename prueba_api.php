@@ -293,12 +293,12 @@ if ($cat_id) {
                     <input type="text" id="cliente" class="form-control form-control-sm mb-2" placeholder="Nombre Completo *">
                     <input type="email" id="email" class="form-control form-control-sm mb-2" placeholder="Email *">
                     <input type="date" id="fecha" class="form-control form-control-sm mb-2">
-                    <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Dirección / RFC</a>
+                    <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Toca aqui para añadir tu Dirección</a>
                     <div class="collapse mt-2" id="extraFields">
                         <input type="tel" id="telefono" class="form-control form-control-sm mb-2" placeholder="Teléfono">
                         <input type="text" id="direccion" class="form-control form-control-sm mb-2" placeholder="Dirección">
                         <div class="row g-2 mb-2"><div class="col-4"><input type="text" id="cp" class="form-control form-control-sm" placeholder="CP"></div><div class="col-8"><input type="text" id="ciudad" class="form-control form-control-sm" placeholder="Ciudad"></div></div>
-                        <input type="text" id="rfc" class="form-control form-control-sm" placeholder="RFC">
+                        <!--input type="text" id="rfc" class="form-control form-control-sm" placeholder="RFC"-->
                     </div>
                 </div>
                 <ul id="lista-carrito" class="list-group list-group-flush mb-3"></ul>
@@ -396,21 +396,33 @@ if ($cat_id) {
 </div>
 
 <footer class="bg-dark text-white pt-5 pb-3">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 col-md-4 mb-4 text-center text-md-start">
-                <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
-                <p class="text-white-50 small">Con más de 25 años de experiencia.</p>
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
+                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
+                    <p class="text-white-50 small">
+                        Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
+                    </p>
+                </div>
+                <div class="col-12 col-md-4 mb-4 text-center text-md-start">
+                    <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
+                    <ul class="list-unstyled text-white-50 small">
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
+                    </ul>
+                </div>
+                <div class="col-12 col-md-4 mb-4 text-center">
+                    <br><br>
+                    <h5>Desarrollado por Arturo</h5>
+                </div>
             </div>
-            <div class="col-12 col-md-4 mb-4 text-right text-md-start">
-                <h5 class="mb-3 fw-bold">Contacto</h5>
-                <ul class="list-unstyled text-white-50 small">
-                    <li>contacto@carpasmontes.com</li>
-                </ul>
+            <hr class="border-secondary">
+            <div class="text-center text-secondary small">
+                © 2026 Carpas Montes. Todos los Derechos Reservados.
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
