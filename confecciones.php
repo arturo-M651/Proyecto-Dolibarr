@@ -179,7 +179,7 @@ require_once 'config.php';
                         <div class="bg-light rounded-circle p-3 text-warning"><i class="bi bi-whatsapp fs-4"></i></div>
                         <div>
                             <small class="text-muted d-block">Atención directa</small>
-                            <span class="fw-bold">55 1234 5678</span>
+                            <span class="fw-bold">55 1706 2971 <br> 55 4069 4603</span>
                         </div>
                     </div>
                 </div>
@@ -241,7 +241,7 @@ require_once 'config.php';
         const detalles = document.getElementById('detalles').value;
         
         const mensaje = `Hola, soy ${nombre}. Me interesa cotizar: *${tipo}*. Detalles: ${detalles}`;
-        const url = `https://wa.me/525630789541?text=${encodeURIComponent(mensaje)}`;
+        const url = `https://wa.me/525517062971?text=${encodeURIComponent(mensaje)}`;
         
         window.open(url, '_blank');
     }

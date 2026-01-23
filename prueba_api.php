@@ -147,8 +147,8 @@ if ($cat_id) {
 
         <div class="benefits-section mb-5" data-aos="fade-up">
             <div class="row g-3 g-md-4">
-                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div><div><h5 class="fw-bold mb-1">Cotización Rápida</h5><p class="text-muted small mb-0">Recibe tu PDF al instante.</p></div></div></div>
-                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Impecable</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
+                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stopwatch fs-4"></i></div><div><h5 class="fw-bold mb-1">Cotización Rápida</h5><p class="text-muted small mb-0">No tiene costo.</p></div></div></div>
+                <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-stars fs-4"></i></div><div><h5 class="fw-bold mb-1">Mobiliario Limpio</h5><p class="text-muted small mb-0">Calidad garantizada.</p></div></div></div>
                 <div class="col-12 col-md-4"><div class="benefit-card d-flex align-items-center p-3 h-100"><div class="benefit-icon-wrapper me-3"><i class="bi bi-shield-check fs-4"></i></div><div><h5 class="fw-bold mb-1">Confirmación Personal</h5><p class="text-muted small mb-0">Agendamos tu evento.</p></div></div></div>
             </div>
         </div>
@@ -157,7 +157,7 @@ if ($cat_id) {
 
         <div class="row g-4">
             
-            <div class="col-6 col-md-4" data-aos="fade-up">
+            <div class="col-12 col-sm-6 col-lg-4" data-aos="fade-up">
                 <div class="cat-card text-decoration-none h-100 d-flex flex-column justify-content-center align-items-center bg-white border border-2 border-warning shadow-sm cursor-pointer" 
                      style="min-height: 250px; cursor: pointer; border-style: dashed !important;"
                      onclick="abrirModalNota()">
@@ -173,17 +173,28 @@ if ($cat_id) {
                     </div>
                 </div>
             </div>
-
-            <?php if (is_array($lista_categorias) && !isset($lista_categorias['error'])) { foreach ($lista_categorias as $cat) { $img_cat = "img_categorias/" . $cat['id'] . ".jpg"; ?>
-                <div class="col-6 col-md-4" data-aos="fade-up">
-                    <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none">
-                        <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>" class="transition-hover" onerror="this.onerror=null; this.src='https://placehold.co/600x400/0e4c81/ffffff?text=<?php echo urlencode($cat['label']); ?>';">
-                        <div class="cat-overlay position-absolute bottom-0 start-0 w-100"><h3 class="mb-1 text-white fw-bold display-6"><?php echo $cat['label']; ?></h3><div class="d-flex align-items-center text-warning fw-bold small mt-2"><span>Explorar</span> <i class="bi bi-arrow-right ms-2 animate-arrow"></i></div></div>
-                    </a>
-                </div>
-            <?php } } ?>
+                <?php if (is_array($lista_categorias) && !isset($lista_categorias['error'])) { 
+                    foreach ($lista_categorias as $cat) { 
+                        $img_cat = "img_categorias/" . $cat['id'] . ".jpg"; 
+                ?>
+                    <div class="col-12 col-sm-6 col-lg-4" data-aos="fade-up">
+                        <a href="?cat=<?php echo $cat['id']; ?>" class="cat-card text-decoration-none h-100 d-block shadow-sm position-relative overflow-hidden" style="border-radius: 20px;">
+                            <img src="<?php echo $img_cat; ?>" alt="<?php echo $cat['label']; ?>" class="transition-hover w-100 object-fit-cover" style="height: 350px;" onerror="this.onerror=null; this.src='https://placehold.co/600x400/0e4c81/ffffff?text=<?php echo urlencode($cat['label']); ?>';">
+                            
+                            <div class="cat-overlay position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                                <h3 class="mb-0 text-white fw-bold display-6"><?php echo $cat['label']; ?></h3>
+                                <div class="d-flex align-items-center text-warning fw-bold small mt-2">
+                                    <span>Explorar</span> <i class="bi bi-arrow-right ms-2 animate-arrow"></i>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                <?php } } ?>
+            </div>
         </div>
-    
+                
+
+
     <?php else: ?>
         <div class="d-flex align-items-center justify-content-between mb-4">
             <h2 class="fw-bold text-dark mb-0"><?php echo $titulo_pagina; ?></h2>
@@ -292,8 +303,9 @@ if ($cat_id) {
 
                     <input type="text" id="cliente" class="form-control form-control-sm mb-2" placeholder="Nombre Completo *">
                     <input type="email" id="email" class="form-control form-control-sm mb-2" placeholder="Email *">
+                    <label class="small fw-bold text-muted mb-1">Fecha del evento</label>
                     <input type="date" id="fecha" class="form-control form-control-sm mb-2">
-                    <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Toca aqui para añadir tu Dirección</a>
+                    <a class="text-decoration-none small fw-bold" data-bs-toggle="collapse" href="#extraFields">+ Toca aqui para añadir tu dirección</a>
                     <div class="collapse mt-2" id="extraFields">
                         <input type="tel" id="telefono" class="form-control form-control-sm mb-2" placeholder="Teléfono">
                         <input type="text" id="direccion" class="form-control form-control-sm mb-2" placeholder="Dirección">
@@ -395,25 +407,28 @@ if ($cat_id) {
     </div>
 </div>
 
-<footer class="bg-dark text-white pt-5 pb-3">
+ <footer class="bg-dark text-white pt-5 pb-3">
         <div class="container">
             <div class="row">
                 <div class="col-12 col-md-4 mb-4 text-center text-md-start">
-                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
+                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Lonas y Carpas Montes</h4>
                     <p class="text-white-50 small">
-                        Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
+                        Con más de 30 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
                     </p>
                 </div>
                 <div class="col-12 col-md-4 mb-4 text-center text-md-start">
                     <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
                     <ul class="list-unstyled text-white-50 small">
-                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
-                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
-                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> Av. 20 de Noviembre #14, Amecameca</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> carpasameca.1996@gmail.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 597-978-0293</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55-1706-2971</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55-4069-4603</li>
                     </ul>
                 </div>
                 <div class="col-12 col-md-4 mb-4 text-center">
-                    <br><br>
+
+                    <br><br><br>
                     <h5>Desarrollado por Arturo</h5>
                 </div>
             </div>

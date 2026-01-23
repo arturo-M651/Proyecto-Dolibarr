@@ -47,7 +47,7 @@
                 <ul class="navbar-nav ms-auto align-items-center gap-2 bg-white bg-lg-transparent p-3 p-lg-0 rounded mt-2 mt-lg-0 shadow-sm shadow-lg-none">
                     <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link active" href="index.php">Inicio</a></li>
                     <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="#servicios">Experiencia</a></li>
-                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="#galeria">Galería</a></li>
+                    <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="galeria.php">Galería</a></li>
                     <li class="nav-item w-100 text-center text-lg-start"><a class="nav-link" href="confecciones.php">Confección</a></li>
                     <li class="nav-item ms-lg-2 w-100">
                         <a class="btn btn-gold shadow-sm w-100" href="prueba_api.php">Ver Catálogo</a>
@@ -65,7 +65,7 @@
                 <a href="prueba_api.php" class="btn btn-gold btn-lg shadow-lg rounded-pill px-5">
                     <i class="bi bi-calendar-check me-2"></i> Cotizar Mi Evento
                 </a>
-                <a href="https://wa.me/525500000000" target="_blank" class="btn btn-outline-light btn-lg px-5 rounded-pill fw-bold">
+                <a href="https://wa.me/5517062971" target="_blank" class="btn btn-outline-light btn-lg px-5 rounded-pill fw-bold">
                     <i class="bi bi-whatsapp me-2"></i> Contactar
                 </a>
             </div>
@@ -76,7 +76,7 @@
         <div class="container">
             <div class="row text-center g-4">
                 <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="100">
-                    <h2 class="display-4 fw-bold" style="color: var(--gold);">25+</h2>
+                    <h2 class="display-4 fw-bold" style="color: var(--gold);">30+</h2>
                     <p class="text-uppercase ls-2">Años de Experiencia</p>
                 </div>
                 <div class="col-12 col-md-4" data-aos="fade-up" data-aos-delay="200">
@@ -144,7 +144,7 @@
                     <div class="position-relative p-2 p-md-4">
                         <div class="display-4 text-warning mb-3"><i class="bi bi-file-earmark-text"></i></div>
                         <h4 class="fw-bold h5">2. Confirma</h4>
-                        <p class="text-muted small">Llena tus datos. Recibirás un PDF.</p>
+                        <p class="text-muted small">Llena tus datos. Recibirás un correo con tu folio.</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3" data-aos="fade-right" data-aos-delay="300">
@@ -268,7 +268,7 @@
                             </h2>
                             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#accordionFAQ">
                                 <div class="accordion-body text-muted">
-                                    Recomendamos reservar al menos con 2 semanas de anticipación, especialmente para fechas de temporada alta (Diciembre, Mayo).
+                                    Recomendamos reservar al menos con 2 semanas de anticipación, especialmente para fechas de temporada alta.
                                 </div>
                             </div>
                         </div>
@@ -280,7 +280,7 @@
                             </h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
                                 <div class="accordion-body text-muted">
-                                    Aceptamos transferencia bancaria y efectivo contra entrega. Requerimos un 50% de anticipo para agendar fecha.
+                                    Se da un anticipo al confirmar y efectivo contra entrega. El anticipo lo asigna el vendedor cuando se le confirma el pedido para agendar fecha.
                                 </div>
                             </div>
                         </div>
@@ -292,26 +292,25 @@
                             </h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#accordionFAQ">
                                 <div class="accordion-body text-muted">
-                                    Sí, cubrimos Chalco, Ixtapaluca y zonas aledañas. Puede aplicar un costo extra de flete dependiendo la distancia.
+                                    Sí, cubrimos los alrrededoes de Amecameca, zona Volcanes, Talamanalco,  Morelos, Ixtapaluca, Chalco. estos ultimos solo en pedidos grandes y puede aplicar un costo extra de flete dependiendo la distancia.
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                
                 <div class="col-lg-6 h-100" data-aos="fade-left">
-                    <div class="card border-0 shadow overflow-hidden h-100" style="border-radius: 20px; min-height: 400px;">
-                        <iframe 
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.665790471966!2d-98.7667!3d19.1234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTnCsDA3JzM0LjIiTiA5OMKwNDUnNTUuNiJX!5e0!3m2!1ses-419!2smx!4v1625600000000!5m2!1ses-419!2smx" 
-                            width="100%" 
-                            height="100%" 
-                            style="border:0; min-height: 400px;" 
-                            allowfullscreen="" 
-                            loading="lazy" 
-                            referrerpolicy="no-referrer-when-downgrade">
-                        </iframe>
-                    </div>
-                </div>
+    <div class="card border-0 shadow overflow-hidden h-100" style="border-radius: 20px; min-height: 400px;">
+        <iframe 
+            width="100%" 
+            height="100%" 
+            style="border:0; min-height: 400px;" 
+            loading="lazy" 
+            allowfullscreen 
+            referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?q=C.+20+de+Noviembre+14,+56903+Amecameca+de+Juárez,+Méx.&t=&z=17&ie=UTF8&iwloc=&output=embed">
+        </iframe>
+    </div>
+</div>
             </div>
         </div>
     </section>
@@ -320,17 +319,19 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 col-md-4 mb-4 text-center text-md-start">
-                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Carpas Montes</h4>
+                    <h4 class="text-warning mb-3 fw-bold" style="font-family: 'Playfair Display', serif;">Lonas y Carpas Montes</h4>
                     <p class="text-white-50 small">
-                        Con más de 25 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
+                        Con más de 30 años de experiencia. Transformamos espacios vacíos en escenarios de ensueño para bodas, graduaciones y eventos corporativos.
                     </p>
                 </div>
                 <div class="col-12 col-md-4 mb-4 text-center text-md-start">
                     <h5 class="mb-3 fw-bold">Contacto Rápido</h5>
                     <ul class="list-unstyled text-white-50 small">
-                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> C. 20 de Noviembre #14, Amecameca</li>
-                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contacto@carpasmontes.com</li>
-                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55 0000 0000</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> Av. 20 de Noviembre #14, Amecameca</li>
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> carpasameca.1996@gmail.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 597-978-0293</li>
+                        <!--li class="mb-2"><i class="bi bi-telephone me-2"></i> 55-1706-2971</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> 55-4069-4603</li-->
                     </ul>
                 </div>
                 <div class="col-12 col-md-4 mb-4 text-center">
@@ -345,11 +346,6 @@
             </div>
         </div>
     </footer>
-
-    <a href="https://wa.me/525500000000" target="_blank" class="btn-whatsapp-float shadow-lg">
-        <i class="bi bi-whatsapp"></i>
-    </a>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>

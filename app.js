@@ -1,8 +1,7 @@
 /**
- * APP.JS - V66 (FIX: FILTRO DE MOBILIARIO CORRECTO + FECHAS + INPUTS)
- * - Soluciona que el filtro de "Unidad/Paquete" no cargue al inicio.
- * - Incluye validación de fecha mínima (3 días).
- * - Incluye validación de carpas (múltiplos de 5).
+ * APP.JS - V66 (FIX: CRASH ENVIAR PEDIDO + FILTROS + FECHAS)
+ * - Soluciona el error "Cannot read properties of null" al enviar.
+ * - Mantiene filtros, simulador y validaciones anteriores.
  */
 
 AOS.init({ once: true, disable: 'mobile' });
@@ -92,7 +91,6 @@ function filtrarMobiliario(modo, btnRef) {
         btnRef.classList.add('active');
     } else {
         // Si es carga automática, buscamos el botón que corresponde
-        // Buscamos el botón cuyo onclick contenga el modo (ej. 'unidad')
         const targetBtn = document.querySelector(`.mode-btn[onclick*="'${modo}'"]`);
         if(targetBtn) targetBtn.classList.add('active');
     }
@@ -299,15 +297,29 @@ function renderizar() {
     document.getElementById('total-precio').innerText = '$' + total.toFixed(2);
 }
 
+// --- FIX: ENVIAR PEDIDO BLINDADO CONTRA ERRORES ---
 async function enviarPedido(tipo) {
     tipo = 'cotizacion'; 
+    
+    // 1. Captura segura de elementos (Si fallan, son null)
     const selectTercero = document.getElementById('tipo_tercero');
+    const elCliente = document.getElementById('cliente');
+    const elEmail = document.getElementById('email');
+    const elFecha = document.getElementById('fecha');
+    
+    // 2. Validación de Seguridad (El error "Cannot read properties" moría aquí)
+    if (!selectTercero || !elCliente || !elEmail || !elFecha) {
+        alert("⚠️ Error de caché detectado: Por favor recarga la página presionando Ctrl + F5 para que el formulario se actualice.");
+        console.error("Error crítico: Elementos del DOM no encontrados. Posible caché antiguo.");
+        return; // Detenemos la ejecución para no "tronar"
+    }
+
     const typentId = selectTercero.value; 
     const typentLabel = selectTercero.options[selectTercero.selectedIndex]?.text; 
 
-    const c = document.getElementById('cliente').value;
-    const e = document.getElementById('email').value;
-    const f = document.getElementById('fecha').value;
+    const c = elCliente.value;
+    const e = elEmail.value;
+    const f = elFecha.value;
     
     if (!typentId || typentId === "") { alert("⚠️ Por favor selecciona qué tipo de cliente eres."); selectTercero.focus(); return; }
     if (!c || !e || !f || carrito.length === 0) { alert("Completa: Nombre, Email y Fecha."); return; }
@@ -329,17 +341,24 @@ async function enviarPedido(tipo) {
     btn.disabled = true;
 
     try {
+        // Obtenemos valores con operador opcional (?.) por seguridad extra en campos secundarios
+        const telefono = document.getElementById('telefono')?.value || '';
+        const direccion = document.getElementById('direccion')?.value || '';
+        const cp = document.getElementById('cp')?.value || '';
+        const ciudad = document.getElementById('ciudad')?.value || '';
+        const rfc = document.getElementById('rfc')?.value || '';
+
         const res = await fetch('procesar_pedido.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 typent_id: typentId, tipo_label: typentLabel,
                 cliente: c, email: e, fecha: f,
-                telefono: document.getElementById('telefono').value,
-                direccion: document.getElementById('direccion').value,
-                cp: document.getElementById('cp').value,
-                ciudad: document.getElementById('ciudad').value,
-                rfc: document.getElementById('rfc').value,
+                telefono: telefono,
+                direccion: direccion,
+                cp: cp,
+                ciudad: ciudad,
+                rfc: rfc,
                 items: carrito, tipo: tipo
             })
         });
@@ -354,6 +373,7 @@ async function enviarPedido(tipo) {
     finally { btn.innerHTML = '<i class="bi bi-file-earmark-text me-2"></i> Solicitar Cotización'; btn.disabled = false; }
 }
 
+// SIMULADOR
 const canvas = document.getElementById('canvasPlano');
 const container = document.getElementById('contenedorCanvas');
 if(canvas && container) {
