@@ -40,7 +40,7 @@ require_once 'config.php';
             </div>
         </a>
         <div class="d-flex align-items-center gap-3">
-            <a href="prueba_api.php" class="text-decoration-none fw-bold text-muted small"><i class="bi bi-arrow-left"></i> VOLVER AL COTIZADOR</a>
+           <a href="index.php" class="btn btn-outline-secondary btn-sm rounded-pill"><i class="bi bi-arrow-left"></i> Volver</a>
         </div>
     </div>
 </nav>
