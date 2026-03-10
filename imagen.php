@@ -1,64 +1,72 @@
 <?php
 /**
- * IMAGEN.PHP - Versión Lectura Directa (Disco Local)
- * Lee los archivos directamente de la carpeta de documentos de Dolibarr
- * para evitar bloqueos de HTTP/API.
+ * IMAGEN.PHP - V2 (CORRECCIÓN DE URL + MODO DEBUG)
  */
+require_once 'config.php';
 
-// ==========================================
-// 1. CONFIGURACIÓN DE LA CARPETA
-// ==========================================
-// Ruta exacta de tus documentos en XAMPP
-$ruta_base = "C:/xampp/htdocs/dolibarr/documents"; 
-
-// ==========================================
-
-// Limpiamos cualquier basura de salida anterior para evitar errores de imagen rota
-if (ob_get_level()) ob_end_clean();
-
+// Validamos parámetros
 $ref = isset($_GET['ref']) ? $_GET['ref'] : '';
 $file = isset($_GET['file']) ? $_GET['file'] : '';
+$debug = isset($_GET['debug']) ? true : false; // Nuevo parámetro para ver errores
 
-function servirImagenError($texto) {
-    // Crea una imagen gris con texto si falla la carga
-    header("Content-Type: image/png");
-    $im = @imagecreate(300, 200);
-    $bg = imagecolorallocate($im, 240, 240, 240); // Fondo gris
-    $text_color = imagecolorallocate($im, 14, 76, 129); // Azul Montes
-    imagestring($im, 5, 80, 90, $texto, $text_color);
-    imagepng($im);
-    imagedestroy($im);
+if (!$ref || !$file) {
+    if ($debug) die("Faltan parámetros REF o FILE.");
+    redirigirPlaceholder();
+}
+
+// CORRECCIÓN CLAVE: No codificar la barra inclinada '/'
+// Dolibarr necesita "REF/Archivo.jpg", no "REF%2FArchivo.jpg"
+$file_path_encoded = urlencode($ref) . "/" . urlencode($file);
+
+// Construimos la URL
+$api_url = DOL_BASE_URL . "/documents/download?modulepart=product&original_file=" . $file_path_encoded;
+
+$curl = curl_init();
+curl_setopt_array($curl, [
+    CURLOPT_URL => $api_url,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        "DOLAPIKEY: " . DOL_API_KEY,
+        "Accept: application/json"
+    ],
+    CURLOPT_SSL_VERIFYPEER => false,
+    CURLOPT_TIMEOUT => 10
+]);
+
+$response = curl_exec($curl);
+$http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+$curl_error = curl_error($curl);
+curl_close($curl);
+
+// MODO DEBUG: Si activas &debug=1, verás el error en texto en lugar de la imagen gris
+if ($debug) {
+    echo "<h1>Diagnóstico de Imagen</h1>";
+    echo "<b>URL API Solicitada:</b> $api_url<br>";
+    echo "<b>Código HTTP:</b> $http_code<br>";
+    echo "<b>Error CURL:</b> $curl_error<br>";
+    echo "<b>Respuesta Raw:</b> <pre>" . htmlspecialchars(substr($response, 0, 500)) . "...</pre>"; // Solo primeros 500 chars
     exit;
 }
 
-if ($ref && $file) {
-    // Seguridad básica: Evita que alguien intente leer archivos fuera de la carpeta
-    $ref = basename($ref); 
-    $file = basename($file);
-
-    // Construimos la ruta completa donde Dolibarr guarda las fotos
-    // Estructura: documents/product/REFERENCIA/ARCHIVO
-    $ruta_archivo = $ruta_base . "/product/" . $ref . "/" . $file;
-
-    // Verificamos si el archivo realmente existe en el disco
-    if (file_exists($ruta_archivo)) {
+// Si Dolibarr nos da la imagen (Código 200)
+if ($http_code == 200 && $response) {
+    $json = json_decode($response, true);
+    
+    if (isset($json['content'])) {
+        $img_data = base64_decode($json['content']);
+        $mime_type = isset($json['content-type']) ? $json['content-type'] : 'image/jpeg';
         
-        // Detectamos si es JPG, PNG, GIF, etc.
-        $mime = mime_content_type($ruta_archivo);
-        
-        // Le decimos al navegador qué tipo de archivo es
-        header("Content-Type: " . $mime);
-        header("Content-Length: " . filesize($ruta_archivo));
-        
-        // Enviamos la imagen directamente
-        readfile($ruta_archivo);
+        header("Content-Type: " . $mime_type);
+        echo $img_data;
         exit;
-        
-    } else {
-        // El archivo no está en la carpeta (quizás no has subido foto a ese producto)
-        servirImagenError("Archivo no encontrado");
     }
-} else {
-    servirImagenError("Datos incompletos");
+}
+
+// Si falló y no estamos en debug, mostrar placeholder
+redirigirPlaceholder();
+
+function redirigirPlaceholder() {
+    header("Location: https://placehold.co/300x300/f8fafc/0e4c81?text=Sin+Foto");
+    exit;
 }
 ?>

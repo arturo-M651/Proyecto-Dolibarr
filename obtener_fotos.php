@@ -1,41 +1,46 @@
 <?php
-// obtener_fotos.php - VERSIÓN DE DIAGNÓSTICO WINDOWS
-header('Content-Type: application/json');
+/**
+ * OBTENER_FOTOS.PHP - V3 (MODO LOCAL: CARPETA FOTOS_EXTRA)
+ * Escanea la carpeta 'fotos_extra/REFERENCIA' en tu servidor.
+ */
 
+// Configuración básica
+header('Content-Type: application/json');
 $ref = isset($_GET['ref']) ? $_GET['ref'] : '';
 
+// Si no hay referencia, devolvemos vacío
 if (!$ref) {
-    echo json_encode(["error" => "No se recibió ninguna referencia."]);
+    echo json_encode([]);
     exit;
 }
 
-// 1. Definimos la ruta
-$folder = "fotos_extra/" . $ref;
+// Limpiamos la referencia para evitar caracteres raros en la ruta
+$ref_limpia = preg_replace('/[^a-zA-Z0-9_-]/', '', $ref);
 
-// 2. DIAGNÓSTICO: ¿Existe la carpeta física?
-if (!is_dir($folder)) {
-    // Si falla, devolvemos un error visible en la consola
-    echo json_encode([
-        "error" => "Carpeta no encontrada",
-        "ruta_buscada" => $folder,
-        "ruta_absoluta_intentada" => realpath('.') . DIRECTORY_SEPARATOR . "fotos_extra" . DIRECTORY_SEPARATOR . $ref
-    ]);
-    exit;
-}
+// Definimos la ruta donde buscar
+// Estructura: fotos_extra / C15X15-4A / foto1.jpg
+$ruta_carpeta = "fotos_extra/" . $ref;
 
-// 3. Buscamos archivos
-$files = glob($folder . "/*.{jpg,jpeg,png,gif,JPG,JPEG,PNG,webp}", GLOB_BRACE);
+$imagenes = [];
 
-$resultado = [];
-
-if ($files) {
-    foreach ($files as $file) {
-        // --- CORRECCIÓN VITAL PARA WINDOWS ---
-        // Cambiamos las barras invertidas (\) por normales (/) para que el navegador las entienda
-        $ruta_web = str_replace('\\', '/', $file);
-        $resultado[] = $ruta_web;
+// Verificamos si la carpeta existe
+if (is_dir($ruta_carpeta)) {
+    // Escaneamos los archivos
+    $archivos = scandir($ruta_carpeta);
+    
+    foreach ($archivos as $archivo) {
+        // Ignoramos los puntos de sistema (. y ..)
+        if ($archivo !== '.' && $archivo !== '..') {
+            // Verificamos que sea una imagen real
+            if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $archivo)) {
+                // Agregamos la ruta pública al array
+                // Nota: rawurlencode permite nombres con espacios
+                $imagenes[] = "fotos_extra/" . $ref . "/" . rawurlencode($archivo);
+            }
+        }
     }
 }
 
-echo json_encode($resultado);
+// Devolvemos la lista al frontend
+echo json_encode($imagenes);
 ?>
